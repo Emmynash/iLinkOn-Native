@@ -1,0 +1,75 @@
+{
+  "expo": {
+    "name": "iLinkOn",
+    "slug": "iLinkOn",
+    "privacy": "public",
+    "sdkVersion": "36.0.0",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "version": "2.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFCC00"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "buildNumber": "2.0.0",
+      "loadJSInBackgroundExperimental": true,
+      "bundleIdentifier": "com.ilinkon.app",
+      "config": {
+        "googleMapsApiKey": "AIzaSyDf_cRMFZYYjQrkf5rqlkgSIr5yQHa_rBA"
+      },
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "App would like to access your current location",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "App would like to access your current location",
+        "NSLocationAlwaysUsageDescription": "App would like to access your current location",
+        "NSCameraUsageDescription": "App would like to access your Camera",
+        "UIUserInterfaceStyle": "Light"
+      }
+    },
+    "android": {
+      "package": "com.ilinkon.www",
+      "versionCode": 2,
+      "permissions": [
+        "com.htc.launcher.permission.UPDATE_SHORTCUT",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "CAMERA",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "com.android.launcher.permission.INSTALL_SHORTCUT"
+      ],
+      "splash": {
+        "resizeMode": "contain",
+        "mdpi": "./src/assets/images/splash.png",
+        "hdpi": "./src/assets/images/splash.png",
+        "xhdpi": "./src/assets/images/splash.png",
+        "backgroundColor": "#FFCC00"
+      },
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyAcMIpx7KUXoupZjseBYCA6Dj-22lkAIk4"
+        }
+      }
+    },
+    "notification": {
+      "icon": "./src/assets/images/noticon.png",
+      "androidMode": "collapse",
+      "androidCollapsedTitle": "New Message",
+      "color": "#a649f2"
+    },
+    "description": ""
+  }
+}
