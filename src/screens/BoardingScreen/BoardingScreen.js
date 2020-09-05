@@ -5,28 +5,38 @@ import { ErrorAlert } from '../../components';
 import styles from './styles';
 import { useNavigation } from 'react-navigation-hooks';
 import * as Permissions from 'expo-permissions';
-import { Notifications } from 'expo';
+import { Notifications, AppLoading } from 'expo';
+import * as SplashScreen from 'expo-splash-screen';
 import { getProfile, saveExpoToken } from '../Utils/Utils';
 import { ProgressDialog } from 'react-native-simple-dialogs';
 
 const BoardingScreen = () => {
-
   const { navigate } = useNavigation();
   const [restoring, setRestoring] = useState(true),
     [showRealApp, setShowRealApp] = useState(false),
     [setExpoToken] = useState('');
 
   useEffect(() => {
-    checkLogin();
-    _registerForPushNotificationsAsync()
+    async function useEffect() {
+      try {
+        await SplashScreen.preventAutoHideAsync();
+      } catch (e) {
+        console.warn(e);
+      }
+
+      _registerForPushNotificationsAsync();
+      checkLogin();
+    }
+    useEffect();
   }, []);
 
   const checkLogin = async () => {
     let profile = await getProfile();
     if (profile !== false && profile.access_token !== false) {
-      return navigate('Navigations')
+      navigate('Navigations');
+      return SplashScreen.hideAsync();
     } else {
-      return setRestoring(false)
+      return setRestoring(false);
     }
   };
 
@@ -61,8 +71,7 @@ const BoardingScreen = () => {
         vibrate: [0, 250, 250, 250],
       });
     }
-  }
-
+  };
 
   const _renderNextButton = () => {
     return (
@@ -97,7 +106,7 @@ const BoardingScreen = () => {
         style={{
           flex: 1,
           // backgroundColor: item.backgroundColor,
-          alignItems: 'center'
+          alignItems: 'center',
           // justifyContent: 'space-evenly',
           // paddingBottom: 100
         }}
@@ -110,32 +119,31 @@ const BoardingScreen = () => {
       </View>
     );
   };
-  return restoring === true ? (
+  return restoring ? (
+    <AppLoading
+      onFinish={setRestoring(false)}
+      onError={console.warn}
+      autoHideSplash={false}
+    />
+  ) : (
     <View style={{ flex: 1 }}>
-      <Image
-        style={styles.backgroundImage}
-        source={require('../../assets/images/bg.png')}
+      <StatusBar barStyle='dark-content' />
+      <AppIntroSlider
+        slides={slides}
+        renderItem={_renderItem}
+        onDone={_onDone}
+        renderDoneButton={_renderDoneButton}
+        renderNextButton={_renderNextButton}
+        renderSkipButton={_renderSkipButton}
+        showSkipButton={false}
+        showNextButton={false}
+        onSkip={() => navigate('Login')}
+        onDone={() => navigate('Login')}
+        dotStyle={styles.sliderDots}
+        activeDotStyle={styles.activeDotStyle}
       />
     </View>
-  ) : (
-      <View style={{ flex: 1 }}>
-        <StatusBar barStyle='dark-content' />
-        <AppIntroSlider
-          slides={slides}
-          renderItem={_renderItem}
-          onDone={_onDone}
-          renderDoneButton={_renderDoneButton}
-          renderNextButton={_renderNextButton}
-          renderSkipButton={_renderSkipButton}
-          showSkipButton={false}
-          showNextButton={false}
-          onSkip={() => navigate('Login')}
-          onDone={() => navigate('Login')}
-          dotStyle={styles.sliderDots}
-          activeDotStyle={styles.activeDotStyle}
-        />
-      </View>
-    );
+  );
 };
 
 const slides = [
@@ -145,7 +153,7 @@ const slides = [
     key: 's1',
     title: 'Connect With Others \n& Solve Challenges',
     text:
-      'Link up with other students in your \ninstitution right on your device. '
+      'Link up with other students in your \ninstitution right on your device. ',
   },
   {
     backgroundColor: '#FFFFFF',
@@ -153,15 +161,15 @@ const slides = [
     key: 's2',
     title: 'Balance Your Social and\n Educational Life',
     text:
-      'Keep in touch with your social life \n without compromising your education'
+      'Keep in touch with your social life \n without compromising your education',
   },
   {
     backgroundColor: '#FFFFFF',
     image: require('../../assets/images/boarding3.png'),
     key: 's3',
     title: 'Enrich Your Lifestyle \n On The Go ',
-    text: 'Be a better and smarter student \non the go'
-  }
+    text: 'Be a better and smarter student \non the go',
+  },
 ];
 
 export default BoardingScreen;

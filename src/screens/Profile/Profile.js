@@ -1,18 +1,18 @@
-'use strict'
-import React, { useState, useEffect } from 'react'
-import * as ImagePicker from 'expo-image-picker'
-import * as Permissions from 'expo-permissions'
-import Constants from 'expo-constants'
-import colors from '../../assets/colors'
-import theme from '../../assets/theme'
-import { ProgressDialog } from 'react-native-simple-dialogs'
-import { Dropdown } from 'react-native-material-dropdown'
-import jwtDecode from 'jwt-decode'
-import { useNavigation } from 'react-navigation-hooks'
-import { NavigationActions, StackActions } from 'react-navigation'
-import PickerSelect from 'react-native-picker-select'
+'use strict';
+import React, { useState, useEffect } from 'react';
+import * as ImagePicker from 'expo-image-picker';
+import * as Permissions from 'expo-permissions';
+import Constants from 'expo-constants';
+import colors from '../../assets/colors';
+import theme from '../../assets/theme';
+import { ProgressDialog } from 'react-native-simple-dialogs';
+import { Dropdown } from 'react-native-material-dropdown';
+import jwtDecode from 'jwt-decode';
+import { useNavigation } from 'react-navigation-hooks';
+import { NavigationActions, StackActions } from 'react-navigation';
+import PickerSelect from 'react-native-picker-select';
 
-import styles from './styles'
+import styles from './styles';
 import {
   TouchableOpacity,
   AsyncStorage,
@@ -21,8 +21,8 @@ import {
   StyleSheet,
   Image,
   View,
-  KeyboardAvoidingView
-} from 'react-native'
+  KeyboardAvoidingView,
+} from 'react-native';
 import {
   getProfileImage,
   saveProfileImage,
@@ -33,70 +33,69 @@ import {
   saveUserDetail,
   GetInterestEndpoint,
   GetSchoolsEndpoint,
-  UpdateProfileEndpoint
-} from '../Utils/Utils'
+  UpdateProfileEndpoint,
+} from '../Utils/Utils';
 import {
   DisplayText,
   ErrorAlert,
   InputField,
   SubmitButton,
-  SuccessAlert
-} from '../../components'
+  SuccessAlert,
+} from '../../components';
 function Profile({ navigation }) {
-
   const [email, setEmail] = useState({
-    email: '',
-    isEmailValid: false
-  }),
+      email: '',
+      isEmailValid: false,
+    }),
     [midname, setMiddleName] = useState({
       midname: '',
-      isMiddleNameValid: false
+      isMiddleNameValid: false,
     }),
     [firstname, setFirstname] = useState({
       firstname: '',
-      isFirstnameValid: false
+      isFirstnameValid: false,
     }),
     [lastname, setLastname] = useState({
       lastname: '',
-      isLastnameValid: false
+      isLastnameValid: false,
     }),
     [interest, setInterest] = useState({
       interest: [],
-      isInterestValid: false
+      isInterestValid: false,
     }),
     [id, setId] = useState(''),
     [showLoading, setShowLoading] = useState(false),
     [showAlert, setShowAlert] = useState({
       showAlert: false,
       showSuccessAlert: false,
-      message: ''
+      message: '',
     }),
     [schoolId, setSchoolId] = useState(''),
     [schoolsData, setSchools] = useState([]),
     [interestData, setInterestData] = useState([]),
     [profileImage, setProfileImage] = useState(null),
     [hasCameraPermission, setHasCameraPermission] = useState(null),
-    [token, setToken] = useState('')
+    [token, setToken] = useState('');
 
-  const { navigate, goBack } = useNavigation()
+  const { navigate, goBack } = useNavigation();
 
   useEffect(() => {
-    checkToken()
-  }, [])
+    checkToken();
+  }, []);
 
   const checkToken = async () => {
-    let profile = await getProfile()
-    let token = profile.access_token
-    setToken(token)
-    await handleGetAllRequest(token)
-  }
+    let profile = await getProfile();
+    let token = profile.access_token;
+    setToken(token);
+    await handleGetAllRequest(token);
+  };
 
   const showLoadingDialogue = () => {
-    setShowLoading(true)
-  }
+    setShowLoading(true);
+  };
   const hideLoadingDialogue = () => {
-    setShowLoading(false)
-  }
+    setShowLoading(false);
+  };
   // const showNotification = (type, title, message) => {
   //   hideLoadingDialogue();
   //   return dropDownAlertRef.alertWithType(type, title, message);
@@ -105,13 +104,13 @@ function Profile({ navigation }) {
   const handleCloseNotification = () => {
     return setShowAlert({
       showAlert: false,
-      showSuccessAlert: false
+      showSuccessAlert: false,
     });
   };
 
   const handleBackPress = () => {
-    goBack()
-  }
+    goBack();
+  };
 
   const getPermissionAsync = async () => {
     if (Constants.platform.ios) {
@@ -131,39 +130,41 @@ function Profile({ navigation }) {
     let result = await ImagePicker.launchImageLibraryAsync({
       allowsEditing: true,
       aspect: [4, 3],
-      base64: true
+      base64: true,
     });
 
     if (!result.cancelled) {
-      let base64Img = `data:image/jpg;base64,${result.base64}`
+      let base64Img = `data:image/jpg;base64,${result.base64}`;
       return handleUploadImage(base64Img);
     }
   };
 
-
   const handleUploadImage = (base64Image) => {
     showLoadingDialogue();
-    let CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/https-cyberve-com/image/upload';
+    let CLOUDINARY_URL =
+      'https://api.cloudinary.com/v1_1/https-cyberve-com/image/upload';
     fetch(CLOUDINARY_URL, {
       body: JSON.stringify({
-        "file": base64Image,
-        "upload_preset": "kvdcspfl",
+        file: base64Image,
+        upload_preset: 'kvdcspfl',
       }),
       headers: {
-        'content-type': 'application/json'
+        'content-type': 'application/json',
       },
       method: 'POST',
-    }).then(async res => {
-      let dataUrl = await res.json()
-      handleSaveProfileImage(dataUrl.url);
-      hideLoadingDialogue()
-    }).catch(err => {
-      hideLoadingDialogue()
-      console.log(err)
-    });
-  }
-  const handleSaveProfileImage = base64Image => {
-    console.log('base64imageeeee:', base64Image)
+    })
+      .then(async (res) => {
+        let dataUrl = await res.json();
+        handleSaveProfileImage(dataUrl.url);
+        hideLoadingDialogue();
+      })
+      .catch((err) => {
+        hideLoadingDialogue();
+        console.log(err);
+      });
+  };
+  const handleSaveProfileImage = (base64Image) => {
+    console.log('base64imageeeee:', base64Image);
     setProfileImage(base64Image);
   };
   const handleGetAllRequest = async (token) => {
@@ -171,39 +172,39 @@ function Profile({ navigation }) {
     let header = {
       headers: {
         'Content-Type': 'application/json',
-        token: `${token}`
-      }
+        token: `${token}`,
+      },
     };
     const school = fetch(GetSchoolsEndpoint, header),
       interest = fetch(GetInterestEndpoint, header);
     Promise.all([school, interest])
-      .then(value => Promise.all(value.map(value => value.json())))
-      .then(finalResps => {
+      .then((value) => Promise.all(value.map((value) => value.json())))
+      .then((finalResps) => {
         const schoolApiResp = finalResps[0],
           interestApiResp = finalResps[1];
         getSchool(schoolApiResp);
         getInterest(interestApiResp);
       })
-      .catch(error => {
+      .catch((error) => {
         hideLoadingDialogue();
         console.log(error);
       });
   };
 
-  const getSchool = async schoolRes => {
+  const getSchool = async (schoolRes) => {
     console.log('schoollsss..... ', schoolRes);
     try {
       if (schoolRes) {
         hideLoadingDialogue();
-        const schToArray = Object.values(schoolRes.data)
+        const schToArray = Object.values(schoolRes.data);
         schToArray.map((item) => {
           const data = {
-            'label': item.name,
-            'value': item.id
-          }
-          console.log(' schoolll data.......', data)
-          return setSchools(sch => [...sch, data]);
-        })
+            label: item.name,
+            value: item.id,
+          };
+          console.log(' schoolll data.......', data);
+          return setSchools((sch) => [...sch, data]);
+        });
       } else {
         alert('Failed to retrieve ');
         hideLoadingDialogue();
@@ -214,19 +215,19 @@ function Profile({ navigation }) {
     }
   };
 
-  const getInterest = async interestRes => {
+  const getInterest = async (interestRes) => {
     try {
       if (interestRes) {
         hideLoadingDialogue();
-        const intToArray = Object.values(interestRes.data)
+        const intToArray = Object.values(interestRes.data);
         intToArray.map((item) => {
           const data = {
-            'label': item.name,
-            'value': item.id
-          }
-          console.log(' schoolll data.......', data)
-          return setInterest(interest => [...interest, data]);
-        })
+            label: item.name,
+            value: item.id,
+          };
+          console.log(' schoolll data.......', data);
+          return setInterest((interest) => [...interest, data]);
+        });
       } else {
         hideLoadingDialogue();
         alert('Failed to retrieve ');
@@ -238,91 +239,89 @@ function Profile({ navigation }) {
   };
 
   const handleUpdateProfile = async () => {
-    if (profileImage === '' || profileImage === null || profileImage === undefined) {
+    // if (profileImage === '' || profileImage === null || profileImage === undefined) {
+    //   return setShowAlert({
+    //     showAlert: true,
+    //     showSuccessAlert: false,
+    //     message: 'Upload Profile Image'
+    //   });
+    // }
+    // else
+    if (firstname.firstname === '') {
       return setShowAlert({
         showAlert: true,
         showSuccessAlert: false,
-        message: 'Upload Profile Image'
+        message: 'Enter first name',
       });
-    }
-    else if (firstname.firstname === '') {
-
+    } else if (lastname.lastname === '') {
       return setShowAlert({
         showAlert: true,
         showSuccessAlert: false,
-        message: 'Enter first name'
+        message: 'Enter last name',
       });
-    }
-    else if (lastname.lastname === '') {
+    } else if (email.email === '') {
       return setShowAlert({
         showAlert: true,
         showSuccessAlert: false,
-        message: 'Enter last name'
+        message: 'Enter email address',
       });
-    }
-    else if (email.email === '') {
+    } else if (schoolId === '') {
       return setShowAlert({
         showAlert: true,
         showSuccessAlert: false,
-        message: 'Enter email address'
+        message: 'Select your school',
       });
-    }
-    else if (schoolId === '') {
-      return setShowAlert({
-        showAlert: true,
-        showSuccessAlert: false,
-        message: 'Select your school'
-      });
-    }
-    else {
-      showLoadingDialogue()
+    } else {
+      showLoadingDialogue();
       const body = JSON.stringify({
-        profilePhoto: profileImage,
+        profilePhoto:
+          profileImage ||
+          'https://gravatar.com/avatar/02bf38fddbfe9f82b94203336f9ebc41?s=200&d=retro',
         fName: firstname.firstname,
         lName: lastname.lastname,
         mName: midname.midname,
         email: email.email,
         interests: [1],
         school: schoolId,
-      })
+      });
       try {
         await updateProfile(body);
       } catch (error) {
-        console.log('Network error may be', error)
+        console.log('Network error may be', error);
         setShowAlert({
           showAlert: true,
           showSuccessAlert: false,
-          message: 'Request failed try again.'
-        })
-        hideLoadingDialogue()
+          message: 'Request failed try again.',
+        });
+        hideLoadingDialogue();
       }
     }
   };
 
-  const updateProfile = async body => {
+  const updateProfile = async (body) => {
     showLoadingDialogue();
     const settings = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `${token}`
+        Authorization: `${token}`,
       },
-      body
+      body,
     };
     let endpoint = `${UpdateProfileEndpoint}`;
     const response = await fetch(endpoint, settings);
 
     const res = await response.json();
-    console.log('hoodjdhdhdhd', res)
+    console.log('hoodjdhdhdhd', res);
     if (res.meta.status >= 300) {
       hideLoadingDialogue();
       setShowAlert({
         showAlert: true,
-        message: res.meta.message
+        message: res.meta.message,
       });
     } else if (res.meta.status == 200 || res.meta.status < 300) {
-      console.log('success', res)
-      let token = res.data.token
+      console.log('success', res);
+      let token = res.data.token;
       let data = {
         email: res.data.user.email,
         fName: res.data.user.fName,
@@ -330,18 +329,20 @@ function Profile({ navigation }) {
         mName: res.data.user.mName,
         id: res.data.user.id,
         phone: res.data.user.phone,
-        profilePhoto: res.data.user.profilePhoto,
+        profilePhoto:
+          res.data.user.profilePhoto ||
+          'https://gravatar.com/avatar/02bf38fddbfe9f82b94203336f9ebc41?s=200&d=retro',
         school: res.data.user.school,
-      }
-      await saveUserDetail(data)
-      await saveProfile(token)
+      };
+      await saveUserDetail(data);
+      await saveProfile(token);
       return navigate('Navigations');
     } else {
       if (res.meta.message) {
         hideLoadingDialogue();
         setShowAlert({
           showAlert: true,
-          message: res.meta.message
+          message: res.meta.message,
         });
       }
     }
@@ -363,13 +364,13 @@ function Profile({ navigation }) {
     if (email.length > 0) {
       setEmail({
         isEmailValid: true,
-        email: email
+        email: email,
       });
     } else {
       if (email.length < 1) {
         setEmail({
           isEmailValid: false,
-          email: ''
+          email: '',
         });
       }
     }
@@ -378,13 +379,13 @@ function Profile({ navigation }) {
     if (midname.length > 0) {
       setMiddleName({
         isMiddleNameValid: true,
-        midname: midname
+        midname: midname,
       });
     } else {
       if (midname.length < 1) {
         setMiddleName({
           isMiddleNameValid: false,
-          midname: ''
+          midname: '',
         });
       }
     }
@@ -393,13 +394,13 @@ function Profile({ navigation }) {
     if (firstname.length > 0) {
       setFirstname({
         isFirstnameValid: true,
-        firstname: firstname
+        firstname: firstname,
       });
     } else {
       if (firstname.length < 1) {
         setFirstname({
           isFirstnameValid: false,
-          firstname: ''
+          firstname: '',
         });
       }
     }
@@ -408,24 +409,23 @@ function Profile({ navigation }) {
     if (lastname.length > 0) {
       setLastname({
         isLastnameValid: true,
-        lastname: lastname
+        lastname: lastname,
       });
     } else {
       if (lastname.length < 1) {
         setLastname({
           isLastnameValid: false,
-          lastname: ''
+          lastname: '',
         });
       }
     }
   };
   const selectSch = (item) => {
-    return setSchoolId(item)
-  }
+    return setSchoolId(item);
+  };
 
   return (
     <SafeAreaView style={styles.mainContainer}>
-
       <ScrollView showsVerticalScrollIndicator={false}>
         <KeyboardAvoidingView style={{ flex: 1, paddingBottom: 50 }}>
           <View style={styles.textView}>
@@ -443,20 +443,21 @@ function Profile({ navigation }) {
               <View style={styles.imageView}>
                 <TouchableOpacity
                   onPress={getPermissionAsync}
-                  style={styles.profileView}>
+                  style={styles.profileView}
+                >
                   {profileImage ? (
                     <Image
                       source={{
-                        uri: `${profileImage}`
+                        uri: `${profileImage}`,
                       }}
                       style={StyleSheet.flatten(styles.profileImage)}
                     />
                   ) : (
-                      <Image
-                        source={require('../../assets/images/profileimage.png')}
-                        style={StyleSheet.flatten(styles.profilePlaceHolder)}
-                      />
-                    )}
+                    <Image
+                      source={require('../../assets/images/profileimage.png')}
+                      style={StyleSheet.flatten(styles.profilePlaceHolder)}
+                    />
+                  )}
                   <TouchableOpacity
                     onPress={getPermissionAsync}
                     style={styles.cameraCont}
@@ -466,7 +467,7 @@ function Profile({ navigation }) {
                       style={StyleSheet.flatten(styles.camera)}
                     />
                   </TouchableOpacity>
-                </TouchableOpacity >
+                </TouchableOpacity>
               </View>
               <View style={styles.profileDetails}>
                 {/* <DisplayText
@@ -482,7 +483,6 @@ function Profile({ navigation }) {
             </View>
           </View>
           <View style={styles.inputFieldView}>
-
             {/* name View */}
             <View style={{ flexDirection: 'row' }}>
               <View style={styles.nameTxtInputtView}>
@@ -497,10 +497,10 @@ function Profile({ navigation }) {
                   width={'80%'}
                   // borderWidth={1}
                   blurOnSubmit={false}
-                // borderColor={theme.colorAccent}
-                // onSubmitEditing={() => {
-                //   handleSignIn();
-                // }}
+                  // borderColor={theme.colorAccent}
+                  // onSubmitEditing={() => {
+                  //   handleSignIn();
+                  // }}
                 />
               </View>
               <View style={styles.nameTxtInputtView}>
@@ -515,10 +515,10 @@ function Profile({ navigation }) {
                   width={'80%'}
                   // borderWidth={1}
                   blurOnSubmit={false}
-                // borderColor={theme.colorAccent}
-                // onSubmitEditing={() => {
-                //   handleSignIn();
-                // }}
+                  // borderColor={theme.colorAccent}
+                  // onSubmitEditing={() => {
+                  //   handleSignIn();
+                  // }}
                 />
               </View>
             </View>
@@ -539,7 +539,6 @@ function Profile({ navigation }) {
               />
             </View>
             <View style={[styles.textInputView]}>
-
               <InputField
                 placeholder={'Email'}
                 placeholderTextColor={colors.darkText}
@@ -566,7 +565,7 @@ function Profile({ navigation }) {
                 value={'Select School'}
                 fontSize={15}
                 itemPadding={10}
-                onChangeText={item => selectSch(item)}
+                onChangeText={(item) => selectSch(item)}
                 textColor={'#000000'}
                 baseColor={colors.darkText}
               />
@@ -588,7 +587,6 @@ function Profile({ navigation }) {
                 baseColor={colors.darkText}
               />
             </View> */}
-
           </View>
         </KeyboardAvoidingView>
       </ScrollView>

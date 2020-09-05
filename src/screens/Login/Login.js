@@ -14,9 +14,7 @@ import {
   InputField,
   SubmitButton,
 } from '../../components';
-import {
-  GetOTPEndpoint,
-} from '../Utils/Utils';
+import { GetOTPEndpoint } from '../Utils/Utils';
 import { ProgressDialog } from 'react-native-simple-dialogs';
 import { useNavigation } from 'react-navigation-hooks';
 import colors from '../../assets/colors';
@@ -25,14 +23,14 @@ import styles from './styles';
 
 const Login = ({ navigation }) => {
   const [phone, setPhone] = useState({
-    phone: '',
-    isPhoneValid: false
-  }),
+      phone: '',
+      isPhoneValid: false,
+    }),
     [showLoading, setShowLoading] = useState(false),
     [showAlert, setShowAlert] = useState({
       showAlert: false,
       showSuccessAlert: false,
-      message: ''
+      message: '',
     }),
     [successMessage, setSuccessMessage] = useState('');
 
@@ -57,7 +55,7 @@ const Login = ({ navigation }) => {
     return dropDownAlertRef.alertWithType(type, title, message);
   };
 
-  const handlePhoneChange = phone => {
+  const handlePhoneChange = (phone) => {
     if (phone.length === 11) {
       let code = '+234';
       let phoneNumber = phone.split('').slice(1).join('');
@@ -70,7 +68,7 @@ const Login = ({ navigation }) => {
       if (phone.length < 1) {
         setPhone({
           isPhoneValid: false,
-          phone: ''
+          phone: '',
         });
       }
     }
@@ -90,7 +88,7 @@ const Login = ({ navigation }) => {
   const handleCloseNotification = () => {
     return setShowAlert({
       showAlert: false,
-      showSuccessAlert: false
+      showSuccessAlert: false,
     });
   };
 
@@ -99,12 +97,12 @@ const Login = ({ navigation }) => {
       return setShowAlert({
         showAlert: true,
         showSuccessAlert: false,
-        message: 'Invalid Phone Number!'
+        message: 'Invalid Phone Number!',
       });
     } else {
       showLoadingDialogue();
       const body = JSON.stringify({
-        phone: phone.phone
+        phone: phone.phone,
       });
       try {
         await getOTP(body);
@@ -115,15 +113,15 @@ const Login = ({ navigation }) => {
     }
   };
 
-  const getOTP = async body => {
+  const getOTP = async (body) => {
     showLoadingDialogue();
     const settings = {
       method: 'POST',
       headers: {
         // Accept: 'application/json',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      body
+      body,
     };
 
     const response = await fetch(GetOTPEndpoint, settings);
@@ -133,20 +131,20 @@ const Login = ({ navigation }) => {
       hideLoadingDialogue();
       setShowAlert({
         showAlert: true,
-        message: res.meta.message.toString()
+        message: res.meta.message.toString(),
       });
     } else if (res.meta.status == 200 || res.meta.status < 300) {
       console.log(" '''''''''''''' ", res);
       hideLoadingDialogue();
       return navigation.navigate('VerifyOtp', {
-        phone: phone.phone
+        phone: phone.phone,
       });
     } else {
       if (res.meta.message) {
         hideLoadingDialogue();
         setShowAlert({
           showAlert: true,
-          message: res.meta.message.toString()
+          message: res.meta.message.toString(),
         });
         console.log({ responses: res.meta.message });
       }
@@ -166,6 +164,10 @@ const Login = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <Image
+        source={require('../../assets/images/OTP-vector.png')}
+        style={styles.wrapper_bg_image}
+      ></Image>
       <StatusBar barStyle='dark-content' />
       <View style={styles.wrapper}>
         <View style={styles.headerView}>
@@ -176,7 +178,7 @@ const Login = ({ navigation }) => {
             <Image
               style={styles.backImage}
               onPress={handleBackPress}
-            // source={require('../../assets/images/back.png')}
+              // source={require('../../assets/images/back.png')}
             />
           </TouchableOpacity>
           {/* <TouchableOpacity onPress={gotoSignUp} style={styles.linkView}>
@@ -224,7 +226,7 @@ const Login = ({ navigation }) => {
             onPress={() => {
               handleRegister();
             }}
-            title={'Get Otp'}
+            title={'Get OTP'}
             btnStyle={styles.buttonSignUp}
             titleStyle={StyleSheet.flatten(styles.loginTxt)}
             disabled={!toggleButtonState}
@@ -247,8 +249,6 @@ const Login = ({ navigation }) => {
         text={'Forgot Password?'}
         styles={StyleSheet.flatten(styles.txtForgot)}
       /> */}
-
-
     </SafeAreaView>
   );
 };

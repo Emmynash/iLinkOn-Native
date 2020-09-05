@@ -19,7 +19,7 @@ import {
   Image,
   View,
   TextInput,
-  FlatList
+  FlatList,
 } from 'react-native';
 import {
   getUserDetails,
@@ -27,14 +27,14 @@ import {
   GetEventDetails,
   getProfile,
   GetAttendEvent,
-  CreateCommentEndpoint
+  CreateCommentEndpoint,
 } from '../Utils/Utils';
 import {
   DisplayText,
   ErrorAlert,
   InputField,
   SubmitButton,
-  CustomModal
+  CustomModal,
 } from '../../components';
 import { NavigationEvents } from 'react-navigation';
 
@@ -64,23 +64,23 @@ class EventDetail extends Component {
       comment: '',
       errorMessage: '',
       showAlert: false,
-      activeEvent: false
+      activeEvent: false,
     };
   }
 
   async componentDidMount() {
-    await this.checkToken()
+    await this.checkToken();
   }
   checkToken = async () => {
-    const eventId = this.props.navigation.getParam('eventId')
-    let profile = await getProfile()
-    let details = await getUserDetails()
+    const eventId = this.props.navigation.getParam('eventId');
+    let profile = await getProfile();
+    let details = await getUserDetails();
     if (typeof profile.access_token !== 'undefined') {
-      let access_token = profile.access_token
+      let access_token = profile.access_token;
       this.setState({
         token: access_token,
         eventId: eventId,
-        name: details.data.fName
+        name: details.data.fName,
       });
       return this.handleGetAllRequest(access_token, eventId);
     }
@@ -92,11 +92,11 @@ class EventDetail extends Component {
       actions: [
         NavigationActions.navigate({
           routeName: 'GroupDetail',
-        })
-      ]
+        }),
+      ],
     });
     return this.props.navigation.dispatch(resetAction);
-  }
+  };
 
   getPermissionAsync = async () => {
     const { translations } = this.props;
@@ -117,7 +117,7 @@ class EventDetail extends Component {
     let result = await ImagePicker.launchImageLibraryAsync({
       allowsEditing: true,
       aspect: [4, 3],
-      base64: true
+      base64: true,
     });
 
     if (!result.cancelled) {
@@ -126,10 +126,10 @@ class EventDetail extends Component {
     }
   };
 
-  handleSaveProfileImage = base64Image => {
+  handleSaveProfileImage = (base64Image) => {
     saveProfileImage(base64Image);
     return this.setState({
-      profileImage: base64Image
+      profileImage: base64Image,
     });
   };
 
@@ -137,12 +137,12 @@ class EventDetail extends Component {
     return this.setState({
       showLoading: false,
     });
-  }
+  };
 
   showLoadingDialogue() {
     return this.setState({
       showLoading: true,
-    })
+    });
   }
 
   resetEventNavigation = () => {
@@ -152,14 +152,14 @@ class EventDetail extends Component {
       actions: [
         NavigationActions.navigate({
           routeName: 'EventDetail',
-        })
-      ]
+        }),
+      ],
     });
     return this.props.navigation.dispatch(resetAction);
-  }
+  };
   handleCloseModal = () => {
     return setShowAlert({
-      showAlert: false
+      showAlert: false,
     });
   };
   showCustomeModal = () => {
@@ -170,7 +170,7 @@ class EventDetail extends Component {
 
   closeCustomModal = () => {
     return this.setState({
-      customModal: false
+      customModal: false,
     });
   };
 
@@ -179,36 +179,36 @@ class EventDetail extends Component {
     let header = {
       headers: {
         Accept: 'application/json',
-        Authorization: `${token}`
-      }
+        Authorization: `${token}`,
+      },
     };
     const eventDetail = fetch(`${GetEventDetails}${eventId}`, header),
       attendEvent = fetch(`${GetAttendEvent}${eventId}/rsvp`, header);
 
     Promise.all([eventDetail, attendEvent])
-      .then(value => Promise.all(value.map(value => value.json())))
-      .then(finalResps => {
+      .then((value) => Promise.all(value.map((value) => value.json())))
+      .then((finalResps) => {
         const eventDetailAPIResp = finalResps[0],
           attendMembersAPIResp = finalResps[1];
 
         this.getEventDetails(eventDetailAPIResp);
         this.getAttendingMembers(attendMembersAPIResp);
       })
-      .catch(error => {
+      .catch((error) => {
         this.hideLoadingDialogue();
       });
   };
 
-  getEventDetails = async groupRes => {
+  getEventDetails = async (groupRes) => {
     try {
       if (groupRes) {
         this.hideLoadingDialogue();
-        console.log('eeeeventttttt details', groupRes.data.dates[0].startDate)
+        console.log('Event details', groupRes.data.dates[0].startDate);
         return this.setState({
           eventDetail: groupRes.data,
           eventDate: groupRes.data.dates[0].startDate,
           commenData: groupRes.data.comments,
-          activeEvent: groupRes.data.isActive
+          activeEvent: groupRes.data.isActive,
         });
       } else {
         this.hideLoadingDialogue();
@@ -220,16 +220,16 @@ class EventDetail extends Component {
     }
   };
 
-  getAttendingMembers = async memberRes => {
+  getAttendingMembers = async (memberRes) => {
     try {
       if (memberRes) {
         this.hideLoadingDialogue();
-        memberRes.data.slice(0, 3)
-        let member = memberRes.data.slice(0, 3)
+        memberRes.data.slice(0, 3);
+        let member = memberRes.data.slice(0, 3);
         return this.setState({
           memberData: member,
-          count: memberRes.data
-        })
+          count: memberRes.data,
+        });
       } else {
         this.hideLoadingDialogue();
         alert('Failed to retrieve ');
@@ -247,13 +247,13 @@ class EventDetail extends Component {
     if (groupName.length > 0) {
       this.setState({
         isGroupNameValid: true,
-        groupName: groupName
+        groupName: groupName,
       });
     } else {
       if (groupName.length < 1) {
         this.setState({
           isGroupNamevalid: false,
-          groupName: ''
+          groupName: '',
         });
       }
     }
@@ -263,13 +263,13 @@ class EventDetail extends Component {
     if (groupDescription.length > 0) {
       this.setState({
         isGroupDescriptionValid: true,
-        groupDescription: groupDescription
+        groupDescription: groupDescription,
       });
     } else {
       if (groupDescription.length < 1) {
         this.setState({
           isGroupDescriptionvalid: false,
-          groupDescription: ''
+          groupDescription: '',
         });
       }
     }
@@ -277,10 +277,9 @@ class EventDetail extends Component {
 
   handleOnbackPress = () => {
     return this.props.navigation.goBack();
-  }
+  };
 
   handleAttendEvent = async () => {
-
     this.showLoadingDialogue();
     const body = {};
     try {
@@ -288,19 +287,18 @@ class EventDetail extends Component {
     } catch (error) {
       this.hideLoadingDialogue();
     }
-
   };
 
-  attendEvent = async body => {
+  attendEvent = async (body) => {
     const { eventId, token, name } = this.state;
     this.showLoadingDialogue();
     const settings = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: token
+        Authorization: token,
       },
-      body
+      body,
     };
     let endpoint = `${GetAttendEvent}${eventId}/rsvp`;
     const response = await fetch(endpoint, settings);
@@ -309,26 +307,26 @@ class EventDetail extends Component {
       this.hideLoadingDialogue();
       this.setState({
         showAlert: true,
-        errorMessage: res.meta.message.toString()
+        errorMessage: res.meta.message.toString(),
       });
     } else if (res.meta.status === 200 || res.meta.status < 300) {
-      this.hideLoadingDialogue()
-      this.closeCustomModal()
+      this.hideLoadingDialogue();
+      this.closeCustomModal();
       return this.setState({
         showAlert: true,
         errorMessage: `${name} will be attending`,
-      })
+      });
     } else {
       this.hideLoadingDialogue();
       this.setState({
         showAlert: true,
-        errorMessage: res.meta.message.toString()
+        errorMessage: res.meta.message.toString(),
       });
     }
   };
 
   handlePostComment = () => {
-    const { comment } = this.state
+    const { comment } = this.state;
     if (comment === '') {
       return this.setState({
         showAlert: true,
@@ -337,24 +335,24 @@ class EventDetail extends Component {
     }
     this.showLoadingDialogue();
     const body = JSON.stringify({
-      comment: comment
+      comment: comment,
     });
     try {
       this.comment(body);
     } catch (error) {
       this.hideLoadingDialogue();
     }
-  }
-  comment = async body => {
+  };
+  comment = async (body) => {
     const { eventId, token } = this.state;
     this.showLoadingDialogue();
     const settings = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        token: token
+        token: token,
       },
-      body
+      body,
     };
     let endpoint = `${CreateCommentEndpoint}${eventId}/comments`;
 
@@ -367,14 +365,14 @@ class EventDetail extends Component {
         errorMessage: res.meta.message,
       });
     } else if (res.meta.status >= 200 || res.meta.status < 300) {
-      this.closeCustomModal()
-      return this.handleGetAllRequest(token, eventId)
+      this.closeCustomModal();
+      return this.handleGetAllRequest(token, eventId);
     } else {
       if (res.meta.message) {
         this.hideLoadingDialogue();
         this.setState({
           showAlert: true,
-          errorMessage: res.meta.message
+          errorMessage: res.meta.message,
         });
       }
     }
@@ -384,16 +382,15 @@ class EventDetail extends Component {
     if (text.length > 0) {
       return this.setState({
         comment: text,
-      })
-    }
-    else {
+      });
+    } else {
       if (text.length < 1) {
         return this.setState({
-          comment: ''
+          comment: '',
         });
       }
     }
-  }
+  };
 
   handleCloseNotification = () => {
     return this.setState({
@@ -404,49 +401,49 @@ class EventDetail extends Component {
   renderMember = ({ item }) => {
     return (
       <View style={styles.imagesView}>
-        {(item.user.profilePhoto === null) ?
+        {item.user.profilePhoto === null ? (
           <Image
             onPress={this.handleOnbackPress}
             style={styles.noIimage}
             source={require('../../assets/images/user.png')}
           />
-          :
+        ) : (
           <Image
             source={{ uri: item.user.profilePhoto }}
             style={StyleSheet.flatten(styles.circleView)}
           />
-        }
+        )}
       </View>
-    )
-  }
+    );
+  };
 
   renderComments = ({ item }) => {
     return (
       <View style={styles.commentView}>
-        {(item.profilePhoto === null) ?
+        {item.profilePhoto === null ? (
           <Image
             onPress={this.handleOnbackPress}
             style={styles.noIimage}
             source={require('../../assets/images/user.png')}
           />
-          :
+        ) : (
           <Image
             source={{ uri: item.profilePhoto }}
             style={StyleSheet.flatten(styles.circleView)}
           />
-        }
+        )}
         <View style={styles.commentDetail}>
+          <DisplayText styles={styles.commentText} text={item.comment.trim()} />
           <DisplayText
-            styles={styles.commentText}
-            text={item.comment.trim()}
+            styles={styles.commentTimeTxt}
+            text={moment(item.createdAt).format('h:mm: a')}
           />
-          <DisplayText styles={styles.commentTimeTxt} text={moment(item.createdAt).format('h:mm: a')} />
         </View>
       </View>
-    )
-  }
+    );
+  };
   toggleButtonState = () => {
-    const { activeEvent } = this.state
+    const { activeEvent } = this.state;
     if (activeEvent) {
       return true;
     } else {
@@ -454,7 +451,16 @@ class EventDetail extends Component {
     }
   };
   render() {
-    const { memberData, showAlert, eventDetail, showLoading, count, eventDate, errorMessage, activeEvent } = this.state;
+    const {
+      memberData,
+      showAlert,
+      eventDetail,
+      showLoading,
+      count,
+      eventDate,
+      errorMessage,
+      activeEvent,
+    } = this.state;
     return (
       <SafeAreaView style={styles.mainContainer}>
         <View style={styles.headView}>
@@ -469,15 +475,11 @@ class EventDetail extends Component {
               style={styles.menu}
               source={require('../../assets/images/notification.png')}
             />
-            {
-              (activeEvent === false) ?
-
-                <TouchableOpacity style={styles.badge}>
-                </TouchableOpacity>
-                :
-                <TouchableOpacity style={styles.badgeGreen}>
-                </TouchableOpacity>
-            }
+            {activeEvent === false ? (
+              <TouchableOpacity style={styles.badge}></TouchableOpacity>
+            ) : (
+              <TouchableOpacity style={styles.badgeGreen}></TouchableOpacity>
+            )}
           </TouchableOpacity>
         </View>
         <ScrollView showsVerticalScrollIndicator={false}>
@@ -485,8 +487,14 @@ class EventDetail extends Component {
             <TouchableOpacity style={styles.cardView}>
               <View style={styles.div}>
                 <View style={styles.cardImgView}>
-                  <DisplayText styles={styles.cardImgTxt} text={moment(eventDate).format('Do MMM')} />
-                  <DisplayText styles={styles.timeTxt} text={moment(eventDate).format('h:mm: a')} />
+                  <DisplayText
+                    styles={styles.cardImgTxt}
+                    text={moment(eventDate).format('Do MMM')}
+                  />
+                  <DisplayText
+                    styles={styles.timeTxt}
+                    text={moment(eventDate).format('h:mm: a')}
+                  />
                 </View>
               </View>
               <View style={styles.divide}>
@@ -507,7 +515,9 @@ class EventDetail extends Component {
                     />
                     <DisplayText
                       styles={styles.divideOneTxt}
-                      text={`Posted: ${moment(eventDetail.createdAt).format('Do MMM YY')}`}
+                      text={`Posted: ${moment(eventDetail.createdAt).format(
+                        'Do MMM YY'
+                      )}`}
                     />
                   </View>
                 </TouchableOpacity>
@@ -515,21 +525,17 @@ class EventDetail extends Component {
             </TouchableOpacity>
           </View>
 
-
-          {
-            (activeEvent === false) ?
-              null
-              :
-              <SubmitButton
-                onPress={() => {
-                  this.handleAttendEvent();
-                }}
-                title={'Attend Event'}
-                btnStyle={styles.modalBtn}
-                titleStyle={StyleSheet.flatten(styles.modalTxt)}
-                disabled={!this.toggleButtonState}
-              />
-          }
+          {activeEvent === false ? null : (
+            <SubmitButton
+              onPress={() => {
+                this.handleAttendEvent();
+              }}
+              title={'Attend Event'}
+              btnStyle={styles.modalBtn}
+              titleStyle={StyleSheet.flatten(styles.modalTxt)}
+              disabled={!this.toggleButtonState}
+            />
+          )}
 
           <View>
             <View style={styles.descriptionView}>
@@ -567,23 +573,22 @@ class EventDetail extends Component {
                 style={{ paddingHorizontal: 16 }}
                 data={memberData}
                 renderItem={this.renderMember}
-                keyExtractor={data => data.id}
+                keyExtractor={(data) => data.id}
                 showsHorizontalScrollIndicator={false}
                 horizontal={true}
-              // contentContainerStyle={{ marginRight: 10 }}
+                // contentContainerStyle={{ marginRight: 10 }}
               />
-              {
-                (count < 3) ?
-                  <DisplayText
-                    text={this.state.count.length.toString()}
-                    styles={StyleSheet.flatten(styles.more)}
-                  />
-                  :
-                  <DisplayText
-                    text={`${this.state.count.length}${' Link(s)'}`}
-                    styles={StyleSheet.flatten(styles.more)}
-                  />
-              }
+              {count < 3 ? (
+                <DisplayText
+                  text={this.state.count.length.toString()}
+                  styles={StyleSheet.flatten(styles.more)}
+                />
+              ) : (
+                <DisplayText
+                  text={`${this.state.count.length}${' Link(s)'}`}
+                  styles={StyleSheet.flatten(styles.more)}
+                />
+              )}
             </View>
           </View>
           <View>
@@ -592,17 +597,14 @@ class EventDetail extends Component {
                 source={require('../../assets/images/speech-bubble.png')}
                 style={StyleSheet.flatten(styles.descImage)}
               />
-              <DisplayText
-                styles={styles.descEvent}
-                text={'Comments '}
-              />
+              <DisplayText styles={styles.descEvent} text={'Comments '} />
             </View>
             <View style={styles.commentListView}>
               <FlatList
                 style={{ paddingHorizontal: 16 }}
                 data={this.state.commenData}
                 renderItem={this.renderComments}
-                keyExtractor={data => data.id.toString()}
+                keyExtractor={(data) => data.id.toString()}
                 showsVerticalScrollIndicator={false}
                 horizontal={false}
               />
@@ -621,8 +623,8 @@ class EventDetail extends Component {
         </TouchableOpacity>
         <ProgressDialog
           visible={showLoading}
-          title="Progress Dialog"
-          message="Please, wait..."
+          title='Progress Dialog'
+          message='Please, wait...'
         />
         <CustomModal
           onPress={() => {
@@ -630,18 +632,22 @@ class EventDetail extends Component {
           }}
           visible={this.state.customModal}
           modalStyle={styles.modal}
-          handleCloseModal={this.handleCloseModal}>
-
+          handleCloseModal={this.handleCloseModal}
+        >
           <View style={styles.modalContainer}>
             <TouchableOpacity
-              onPress={() => { this.closeCustomModal(); }}
-              style={styles.textBtny}>
+              onPress={() => {
+                this.closeCustomModal();
+              }}
+              style={styles.textBtny}
+            >
               <DisplayText
                 styles={styles.closeTxt}
                 text={'Close'}
                 onPress={() => {
                   this.closeCustomModal();
-                }} />
+                }}
+              />
             </TouchableOpacity>
 
             <View style={styles.textInputView}>
@@ -668,8 +674,8 @@ class EventDetail extends Component {
           </View>
           <ProgressDialog
             visible={showLoading}
-            title="Progress Dialog"
-            message="Please, wait..."
+            title='Progress Dialog'
+            message='Please, wait...'
           />
           <ErrorAlert
             title={'Error!'}

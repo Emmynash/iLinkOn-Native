@@ -6,12 +6,18 @@ const elevation = {
   shadowColor: '#00000010',
   shadowOffset: { height: 1, width: 0 },
   shadowOpacity: 3.25,
-  shadowRadius: 3.25
-}
+  shadowRadius: 3.25,
+};
 let styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
-    backgroundColor: theme.colorAccent
+    backgroundColor: theme.colorAccent,
+  },
+  menu: {
+    resizeMode: 'contain',
+    width: 25,
+    height: 25,
+    marginLeft: 1000,
   },
 
   headView: {
@@ -20,7 +26,7 @@ let styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingTop: Platform.OS === 'ios' ? 8 : StatusBar.currentHeight,
-    paddingHorizontal: 20
+    paddingHorizontal: 20,
   },
   backLogo: {
     resizeMode: 'contain',
@@ -28,7 +34,7 @@ let styles = StyleSheet.create({
     height: 20,
   },
   headerIconView: {
-    flexDirection: 'row'
+    flexDirection: 'row',
   },
   backTp: {
     width: 20,
@@ -50,7 +56,7 @@ let styles = StyleSheet.create({
     height: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 16
+    marginLeft: 16,
   },
   menu: {
     resizeMode: 'contain',
@@ -63,13 +69,13 @@ let styles = StyleSheet.create({
     height: 150,
     backgroundColor: colors.yellow,
     alignItems: 'center',
-    marginTop: 8
+    marginTop: 8,
   },
   csView: {
     marginHorizontal: 20,
     width: 100,
     height: 100,
-    borderRadius: 3
+    borderRadius: 3,
   },
   profileImageView: {
     // width: '75%',
@@ -81,20 +87,20 @@ let styles = StyleSheet.create({
     flexDirection: 'row',
     marginTop: 10,
     borderRadius: theme.btnRadius,
-    marginLeft: 30
+    marginLeft: 30,
   },
   profileContainer: {
     flexDirection: 'row',
     width: '100%',
     // justifyContent: 'center',
-    paddingTop: 10
+    paddingTop: 10,
   },
   profileDetails: {
     alignItems: 'center',
     flexDirection: 'column',
     width: '90%',
     justifyContent: 'center',
-    marginLeft: '10%'
+    marginLeft: '10%',
   },
   imageView: {
     width: 100,
@@ -104,11 +110,11 @@ let styles = StyleSheet.create({
     alignSelf: 'center',
     position: 'absolute',
     // left: -40
-    left: 100
+    left: 100,
   },
   gpDetailHeader: {
     width: '60%',
-    overflow: 'hidden'
+    overflow: 'hidden',
   },
   userProfileText: {
     fontFamily: theme.headerFont,
@@ -119,23 +125,22 @@ let styles = StyleSheet.create({
     fontFamily: theme.LightFont,
     fontSize: theme.SmallerFont,
     color: theme.primaryColor,
-
   },
   memberText: {
     fontFamily: theme.LightFont,
     fontSize: theme.SmallFont,
     color: theme.primaryColor,
-    marginLeft: 4
+    marginLeft: 4,
   },
   memberIcon: {
     width: 20,
     height: 20,
-    tintColor: '#00000069'
+    tintColor: '#00000069',
   },
   memberView: {
     flexDirection: 'row',
     paddingLeft: 5,
-    color: theme.lightTextGRay
+    color: theme.lightTextGRay,
   },
   flatListView: {
     // marginHorizontal: 16,
@@ -154,12 +159,11 @@ let styles = StyleSheet.create({
     backgroundColor: theme.colorAccent,
     // marginHorizontal: 4,
     borderRadius: 15,
-
   },
   div: {
     width: '40%',
     borderBottomLeftRadius: 10,
-    borderTopLeftRadius: 10
+    borderTopLeftRadius: 10,
   },
   divide: {
     width: '60%',
@@ -173,7 +177,7 @@ let styles = StyleSheet.create({
   divideTxt: {
     color: '#000000',
     fontFamily: theme.headerFont,
-    fontSize: 15
+    fontSize: 15,
     // paddingRight: 4
   },
   divideIcon: {
@@ -186,7 +190,7 @@ let styles = StyleSheet.create({
     fontFamily: theme.LightFont,
     fontSize: theme.thinyFont,
     width: '90%',
-    marginLeft: 4
+    marginLeft: 4,
   },
   divideTxtView: {
     flexDirection: 'row',
@@ -208,30 +212,30 @@ let styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 2.25,
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   cardImgTxt: {
     color: colors.white,
     fontSize: 23,
-    fontFamily: theme.headerFont
+    fontFamily: theme.headerFont,
   },
   timeTxt: {
     color: colors.white,
     fontSize: 23,
-    fontFamily: theme.LightFont
+    fontFamily: theme.LightFont,
   },
   holder: {
     backgroundColor: 'transparent',
     paddingHorizontal: 20,
   },
   secondView: {
-    backgroundColor: '#fff'
+    backgroundColor: '#fff',
   },
   secondViewTxt: {
     fontFamily: theme.headerFont,
     fontSize: theme.LargeFont,
     color: '#000000',
-    marginTop: 16
+    marginTop: 16,
     // paddingLeft: 20
   },
   flatlist: {
@@ -239,20 +243,20 @@ let styles = StyleSheet.create({
   },
   imagesView: {
     flexDirection: 'row',
-    paddingVertical: 8
+    paddingVertical: 8,
   },
   circleView: {
     borderRadius: 50,
     width: 60,
     height: 60,
-    marginRight: 8
+    marginRight: 8,
   },
   memberImage: {
     borderRadius: 50,
     width: 60,
     height: 60,
     marginRight: 8,
-    tintColor: colors.gray
+    tintColor: colors.gray,
   },
   more: {
     fontSize: theme.MediumFont,
@@ -263,19 +267,19 @@ let styles = StyleSheet.create({
   usernameText: {
     fontFamily: theme.headerFont,
     fontSize: theme.LargeFont,
-    color: theme.colorAccent
+    color: theme.colorAccent,
   },
   emailText: {
     fontFamily: theme.primaryFont,
     fontSize: theme.SmallerFont,
-    color: theme.whiteShade
+    color: theme.whiteShade,
   },
   formLabelText: {
     fontFamily: theme.primaryFont,
     fontSize: 15,
     fontWeight: '300',
     color: theme.darkText,
-    marginLeft: 10
+    marginLeft: 10,
   },
   profileView: {
     width: 100,
@@ -288,31 +292,31 @@ let styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2.25,
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   profileImage: {
     height: '99%',
     width: '99%',
     borderRadius: 59,
-    overflow: 'hidden'
+    overflow: 'hidden',
   },
   profilePlaceHolder: {
     height: '90%',
     width: '90%',
     borderRadius: 50,
-    overflow: 'hidden'
+    overflow: 'hidden',
   },
   cameraCont: {
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'absolute'
+    position: 'absolute',
     // bottom: 4,
     // right: 0
   },
   camera: {
     width: 35,
     height: 35,
-    resizeMode: 'contain'
+    resizeMode: 'contain',
   },
   messageView: {
     width: '90%',
@@ -323,24 +327,24 @@ let styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignSelf: 'center',
-    marginVertical: 16
+    marginVertical: 16,
   },
   messageText: {
     fontFamily: theme.headerFont,
     fontSize: theme.MediumFont,
-    color: '#707070'
+    color: '#707070',
   },
   mesageImage: {
     width: 22,
     height: 22,
-    resizeMode: 'contain'
+    resizeMode: 'contain',
   },
   inputFieldView: {
     width: '100%',
     height: 50,
     paddingHorizontal: 16,
     marginTop: 24,
-    marginBottom: 280
+    marginBottom: 280,
   },
   textInputView: {
     width: '100%',
@@ -352,7 +356,7 @@ let styles = StyleSheet.create({
     paddingLeft: 12,
     borderBottomWidth: 0.5,
     borderBottomColor: colors.darkText,
-    marginVertical: 8
+    marginVertical: 8,
     // borderWidth: 1,
     // borderColor: colors.black,
   },
@@ -366,7 +370,7 @@ let styles = StyleSheet.create({
     paddingLeft: 12,
     borderBottomWidth: 0.5,
     borderBottomColor: colors.darkText,
-    marginVertical: 8
+    marginVertical: 8,
     // borderWidth: 1,
     // borderColor: colors.black,
   },
@@ -375,7 +379,7 @@ let styles = StyleSheet.create({
     width: 20,
     resizeMode: 'contain',
     marginRight: 8,
-    borderRadius: 15
+    borderRadius: 15,
     // tintColor: colors.darkText,
   },
   plusIcon: {
@@ -385,14 +389,14 @@ let styles = StyleSheet.create({
     resizeMode: 'contain',
     marginRight: 8,
     borderRadius: 15,
-    tintColor: colors.darkText
+    tintColor: colors.darkText,
   },
   flag: {
     height: 20,
     width: 20,
     resizeMode: 'contain',
     marginRight: 8,
-    borderRadius: 15
+    borderRadius: 15,
   },
   buttonSignUp: {
     width: '96%',
@@ -409,20 +413,20 @@ let styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 2.25,
     fontSize: theme.SmallFont,
-    paddingVertical: 5
+    paddingVertical: 5,
   },
   buttonTxt: {
     fontFamily: theme.secondaryHeader,
     color: theme.whiteShade,
     fontSize: theme.SmallerFont,
-    alignSelf: 'center'
+    alignSelf: 'center',
   },
   loginTxt: {
     fontFamily: theme.headerFont,
     color: theme.whiteShade,
     fontSize: theme.SmallFont,
     alignSelf: 'center',
-    fontWeight: '900'
+    fontWeight: '900',
   },
   langDropDowm: {
     width: '100%',
@@ -433,10 +437,10 @@ let styles = StyleSheet.create({
     // padding: 8,
     paddingHorizontal: 8,
     marginVertical: 8,
-    paddingBottom: 10
+    paddingBottom: 10,
   },
   dropdownStyle: {
-    borderColor: theme.buttonGray
+    borderColor: theme.buttonGray,
     // paddingLeft: 4
   },
   buttonWithImage: {
@@ -447,7 +451,7 @@ let styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
-    marginTop: 120
+    marginTop: 120,
     // paddingRight: 8
   },
   // iconDoor: {
@@ -460,7 +464,7 @@ let styles = StyleSheet.create({
     fontFamily: theme.headerFont,
     color: colors.white,
     fontSize: 18,
-    alignSelf: 'center'
+    alignSelf: 'center',
   },
   joinBtn: {
     width: 62,
@@ -477,20 +481,20 @@ let styles = StyleSheet.create({
     position: 'absolute',
     bottom: 20,
     right: 20,
-    paddingBottom: 8
+    paddingBottom: 8,
   },
   joinTxt: {
     fontFamily: theme.headerFont,
     color: theme.colorAccent,
     fontSize: 40,
-    alignSelf: 'center'
+    alignSelf: 'center',
   },
   modalContainer: {
     width: '100%',
     height: '100%',
     alignItems: 'flex-end',
     paddingRight: 20,
-    paddingTop: Platform.OS === 'ios' ? 54 : 45
+    paddingTop: Platform.OS === 'ios' ? 54 : 45,
   },
   joinGropView: {
     width: '40%',
@@ -505,7 +509,7 @@ let styles = StyleSheet.create({
   modal: {
     flex: 1,
     width: '100%',
-    padding: 2
+    padding: 2,
   },
   modalBtn: {
     width: '90%',
@@ -521,23 +525,23 @@ let styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 2.25,
     borderRadius: 4,
-    marginVertical: 4
+    marginVertical: 4,
   },
   modalTxt: {
     fontFamily: theme.LightFont,
     color: theme.primaryColor,
     fontSize: theme.SmallFont,
-    alignSelf: 'center'
+    alignSelf: 'center',
   },
   groupSubText: {
     fontSize: theme.SmallerFont,
     color: colors.darkGrayTxt,
-    fontFamily: theme.LightFont
+    fontFamily: theme.LightFont,
   },
   groupSubText: {
     fontSize: theme.SmallerFont,
     color: colors.darkGrayTxt,
-    fontFamily: theme.LightFont
+    fontFamily: theme.LightFont,
   },
 
   renderRowView: {
@@ -546,7 +550,7 @@ let styles = StyleSheet.create({
     borderRadius: theme.btnRadius,
     marginTop: 20,
     width: 200,
-    height: 200
+    height: 200,
   },
   flatlistGroup: {
     width: '100%',
@@ -557,7 +561,7 @@ let styles = StyleSheet.create({
     shadowOffset: { height: 2, width: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 2.25,
-    borderRadius: theme.btnRadius
+    borderRadius: theme.btnRadius,
   },
 });
 

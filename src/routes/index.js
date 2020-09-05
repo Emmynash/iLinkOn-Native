@@ -32,8 +32,8 @@ const OnBoardingStack = createStackNavigator({
   BoardingScreen: {
     screen: BoardingScreen,
     navigationOptions: {
-      headerShown: false
-    }
+      headerShown: false,
+    },
   },
   // SplashScreen: {
   //   screen: SplashScreen,
@@ -44,162 +44,161 @@ const OnBoardingStack = createStackNavigator({
 });
 
 const AuthStack = createStackNavigator({
-
   Login: {
     screen: Login,
     navigationOptions: {
-      headerShown: false
-    }
+      headerShown: false,
+    },
   },
   Register: {
     screen: Register,
     navigationOptions: {
-      headerShown: false
-    }
+      headerShown: false,
+    },
   },
   Profile: {
     screen: Profile,
     navigationOptions: {
-      headerShown: false
-    }
+      headerShown: false,
+    },
   },
   ForgetPassword: {
     screen: ForgetPassword,
     navigationOptions: {
-      headerShown: false
-    }
+      headerShown: false,
+    },
   },
 
   VerifyOtp: {
     screen: VerifyOtp,
     navigationOptions: {
-      headerShown: false
-    }
+      headerShown: false,
+    },
   },
   Logout: {
     screen: Logout,
     navigationOptions: {
-      headerShown: false
-    }
-  }
+      headerShown: false,
+    },
+  },
 });
 
 const MenuStack = createStackNavigator({
   Navigations: {
     screen: Navigations,
     navigationOptions: {
-      headerShown: false
-    }
+      headerShown: false,
+    },
   },
   DashBoard: {
     screen: DashBoard,
     navigationOptions: {
-      headerShown: false
-    }
+      headerShown: false,
+    },
   },
   CreateGroup: {
     screen: CreateGroup,
     navigationOptions: {
-      headerShown: false
-    }
+      headerShown: false,
+    },
   },
   GroupDetail: {
     screen: GroupDetail,
     navigationOptions: {
-      headerShown: false
-    }
+      headerShown: false,
+    },
   },
   Groups: {
     screen: Groups,
     navigationOptions: {
-      headerShown: false
-    }
+      headerShown: false,
+    },
   },
   Messages: {
     screen: Messages,
     navigationOptions: {
-      headerShown: false
-    }
+      headerShown: false,
+    },
   },
   Chat: {
     screen: Chat,
     navigationOptions: {
-      headerShown: false
-    }
+      headerShown: false,
+    },
   },
 
   ChatHooks: {
     screen: ChatHooks,
     navigationOptions: {
-      headerShown: false
-    }
+      headerShown: false,
+    },
   },
   Notifications: {
     screen: Notifications,
     navigationOptions: {
-      headerShown: false
-    }
+      headerShown: false,
+    },
   },
   Settings: {
     screen: Settings,
     navigationOptions: {
-      headerShown: false
-    }
+      headerShown: false,
+    },
   },
   CreateEvent: {
     screen: CreateEvent,
     navigationOptions: {
-      headerShown: false
-    }
+      headerShown: false,
+    },
   },
   GroupMembers: {
     screen: GroupMembers,
     navigationOptions: {
-      headerShown: false
-    }
+      headerShown: false,
+    },
   },
   EventDetail: {
     screen: EventDetail,
     navigationOptions: {
-      headerShown: false
-    }
+      headerShown: false,
+    },
   },
   FindGroup: {
     screen: FindGroup,
     navigationOptions: {
-      headerShown: false
-    }
+      headerShown: false,
+    },
   },
   JoinGroup: {
     screen: JoinGroup,
     navigationOptions: {
-      headerShown: false
-    }
+      headerShown: false,
+    },
   },
   RemoveGroup: {
     screen: RemoveGroup,
     navigationOptions: {
-      headerShown: false
-    }
+      headerShown: false,
+    },
   },
   UpdateGroup: {
     screen: UpdateGroup,
     navigationOptions: {
-      headerShown: false
+      headerShown: false,
     },
   },
   UpdateProfile: {
     screen: UpdateProfile,
     navigationOptions: {
-      headerShown: false
-    }
+      headerShown: false,
+    },
   },
   PrivacyTerms: {
     screen: PrivacyTerms,
     navigationOptions: {
-      headerShown: false
-    }
-  }
+      headerShown: false,
+    },
+  },
 });
 
 const AppSwitchNavigator = createSwitchNavigator(
@@ -207,10 +206,10 @@ const AppSwitchNavigator = createSwitchNavigator(
     AuthLoading: BoardingScreen,
     Splash: OnBoardingStack,
     Auth: AuthStack,
-    Menu: MenuStack
+    Menu: MenuStack,
   },
   {
-    initialRouteName: 'AuthLoading'
+    initialRouteName: 'AuthLoading',
   }
 );
 

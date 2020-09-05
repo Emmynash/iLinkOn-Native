@@ -34,7 +34,7 @@
       }
     },
     "android": {
-      "package": "com.ilinkon.www",
+      "package": "com.ilinkon.app",
       "versionCode": 3,
       "permissions": [
         "com.htc.launcher.permission.UPDATE_SHORTCUT",

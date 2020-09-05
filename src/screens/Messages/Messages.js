@@ -25,24 +25,27 @@ import {
   ProfileEndpoint,
   CreateThreadEndpoint,
   GetGroupsEndpoint,
-  GetThreadMessage
+  GetThreadMessage,
 } from '../Utils/Utils';
 import {
   DisplayText,
   ErrorAlert,
   InputField,
   SubmitButton,
-  SuccessAlert
+  SuccessAlert,
+  ProfileImage,
 } from '../../components';
 
 const Messages = () => {
   const navigation = useNavigation();
   const { navigate } = useNavigation();
   const [showAlert, setShowAlert] = useState({
-    showAlert: false,
-    showSuccessAlert: false,
-    message: ''
-  }),
+      showAlert: false,
+      showSuccessAlert: false,
+      message: '',
+      imageTitile: '',
+      profilePic: '',
+    }),
     [switchValue, setSwitchValue] = useState(false),
     [switchValue2, setSwitchValue2] = useState(false),
     [token, setToken] = useState(''),
@@ -52,72 +55,76 @@ const Messages = () => {
     [userId, setUserId] = useState(''),
     [showLoading, setShowLoading] = useState(false),
     [searchText, setSearchText] = useState(''),
-    [profileImage, setProfileImage] = useState('http://res.cloudinary.com/https-cyberve-com/image/upload/v1584886506/pre61jvaz0nrrmoudwxr.jpg');
+    [profileImage, setProfileImage] = useState(
+      'http://res.cloudinary.com/https-cyberve-com/image/upload/v1584886506/pre61jvaz0nrrmoudwxr.jpg'
+    );
   useEffect(() => {
     checkToken();
   }, []);
 
   const checkToken = async () => {
-    let userDetails = await getUserDetails()
-    let profile = await getProfile()
-    let image = await getProfileImage()
+    let userDetails = await getUserDetails();
+    let profile = await getProfile();
+    let image = await getProfileImage();
     if (typeof userDetails !== 'undefined') {
-      let access_token = profile.access_token
-      let id = userDetails.data.id
-      setToken(access_token)
-      setProfileImage(image.image)
-      setUserId(id)
-      setUserName(`${userDetails.data.fName} ${userDetails.data.lName}`)
-      await handleGetAllRequest(access_token)
+      let access_token = profile.access_token;
+      let id = userDetails.data.id;
+      setToken(access_token);
+      setProfileImage(image.image);
+      setUserId(id);
+      setUserName(`${userDetails.data.fName} ${userDetails.data.lName}`);
+      await handleGetAllRequest(access_token);
     }
-  }
+  };
 
   const showLoadingDialogue = () => {
-    setShowLoading(true)
-  }
+    setShowLoading(true);
+  };
 
   const hideLoadingDialogue = () => {
-    setShowLoading(false)
-  }
+    setShowLoading(false);
+  };
 
   const handleGetAllRequest = async (token) => {
     showLoadingDialogue();
     let header = {
       headers: {
         'Content-Type': 'application/json',
-        token: `${token}`
-      }
+        token: `${token}`,
+      },
     };
     const allGroup = fetch(GetThreadMessage, header),
       allUser = fetch(ProfileEndpoint, header);
 
-    Promise.all([allGroup, allUser,])
-      .then(value => Promise.all(value.map(value => value.json())))
-      .then(finalResps => {
+    Promise.all([allGroup, allUser])
+      .then((value) => Promise.all(value.map((value) => value.json())))
+      .then((finalResps) => {
         const groupAPIResp = finalResps[0],
           allUserAPIResp = finalResps[1];
         getThread(groupAPIResp);
         getAllUsers(allUserAPIResp);
       })
-      .catch(error => {
+      .catch((error) => {
         hideLoadingDialogue();
       });
   };
 
-  const getThread = async groupRes => {
+  const getThread = async (groupRes) => {
     try {
-
       if (groupRes) {
         hideLoadingDialogue();
-        const groupToArray = Object.values(groupRes.data)
+        const groupToArray = Object.values(groupRes.data);
         let data = groupToArray.filter((item) => {
-          if (item.secondParticipantId === null || item.secondParticipantId === userId) {
-            return false
+          if (
+            item.secondParticipantId === null ||
+            item.secondParticipantId === userId
+          ) {
+            return false;
           }
-          return true
-        })
-        console.log('hello checing mesage', data)
-        return setUserData(data)
+          return true;
+        });
+        console.log('hello checking mesage', data);
+        return setUserData(data);
       } else {
         hideLoadingDialogue();
         alert('Failed to retrieve ');
@@ -127,11 +134,11 @@ const Messages = () => {
     }
   };
 
-  const getAllUsers = async userRes => {
+  const getAllUsers = async (userRes) => {
     try {
       if (userRes) {
         hideLoadingDialogue();
-        const usersToArray = Object.values(userRes.data)
+        const usersToArray = Object.values(userRes.data);
         // setUserData(usersToArray)
       } else {
         hideLoadingDialogue();
@@ -146,31 +153,30 @@ const Messages = () => {
     await navigation.toggleDrawer();
   };
   const toggleSwitch1 = (value) => {
-    setSwitchValue(value)
-  }
+    setSwitchValue(value);
+  };
   const toggleSwitch2 = (value) => {
-    setSwitchValue2(value)
-  }
+    setSwitchValue2(value);
+  };
   const selectUserorGroup = async (item) => {
     const body = JSON.stringify({
-      'userId': item.secondParticipantId
-    })
-    await handleChat(body, item)
+      userId: item.secondParticipantId,
+    });
+    await handleChat(body, item);
 
     // const body = JSON.stringify({
     //   'userId': item.id
     // })
     // await handleChat(body, item)
-
-  }
+  };
 
   const handleChat = async (body, item) => {
-    showLoadingDialogue()
+    showLoadingDialogue();
     const settings = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `${token}`
+        Authorization: `${token}`,
       },
       body: body,
     };
@@ -181,36 +187,57 @@ const Messages = () => {
       hideLoadingDialogue();
       setShowAlert({
         showAlert: true,
-        message: res.meta.message
+        message: res.meta.message,
       });
     } else if (res.meta.status == 200 && res.meta.status < 300) {
       hideLoadingDialogue();
       return navigate('Chat', {
-        'data': res.data,
-        'item': item
+        data: res.data,
+        item: item,
       });
     } else {
       if (res.meta.message) {
         hideLoadingDialogue();
         setShowAlert({
           showAlert: true,
-          message: res.meta.message
+          message: res.meta.message,
         });
         hideLoadingDialogue();
       }
     }
   };
 
+  const handleImageView = (item) => {
+    return setShowAlert({
+      showAlert: true,
+      showSuccessAlert: false,
+      profilePic: item.secondParticipantProfilepic,
+      imageTitile: item.secondParticipantfName,
+    });
+  };
+
+  const handleCloseNotification = () => {
+    return setShowAlert({
+      showAlert: false,
+      showSuccessAlert: false,
+    });
+  };
+
   const renderRow = ({ item }) => {
     return (
       <TouchableOpacity
         onPress={() => selectUserorGroup(item)}
-        style={styles.cardView}>
-        <TouchableOpacity style={styles.headerView}
-          onPress={() => selectUserorGroup(item)}>
+        style={styles.cardView}
+      >
+        <TouchableOpacity
+          style={styles.headerView}
+          onPress={() => handleImageView(item)}
+        >
           <Image
-            onPress={() => selectUserorGroup(item)}
-            source={{ uri: item.secondParticipantProfilepic || item.profilePhoto }}
+            onPress={() => handleImageView(item)}
+            source={{
+              uri: item.secondParticipantProfilepic || item.profilePhoto,
+            }}
             style={StyleSheet.flatten(styles.profileIcon)}
           />
           <View>
@@ -224,13 +251,12 @@ const Messages = () => {
               styles={StyleSheet.flatten(styles.messageTxt)}
               text={'hello are you there'}
             /> */}
-
           </View>
-
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => selectUserorGroup(item)}
-          style={styles.headerView} >
+          style={styles.headerView}
+        >
           <Image
             onPress={(item) => selectUserorGroup(item)}
             source={require('../../assets/images/arrow_forward.png')}
@@ -238,19 +264,18 @@ const Messages = () => {
           />
         </TouchableOpacity>
       </TouchableOpacity>
-    )
-  }
+    );
+  };
   const renderuserHeader = () => {
-    return (userData.length > 0) ? (
+    return userData.length > 0 ? (
       <View style={styles.userHeader}>
         <DisplayText
           styles={StyleSheet.flatten(styles.headerText)}
           text={'Users'}
         />
-      </View>)
-      :
-      (null)
-  }
+      </View>
+    ) : null;
+  };
   return (
     <SafeAreaView style={styles.mainContainer}>
       <StatusBar barStyle='dark-content' />
@@ -266,10 +291,8 @@ const Messages = () => {
           styles={StyleSheet.flatten(styles.headerText)}
           text={'Messages'}
         />
-
-      </View >
+      </View>
       <View style={{ flex: 1 }}>
-
         {/* <FlatList
           data={groupData.map((a) => ({ sort: Math.random(), value: a }))
             .sort((a, b) => a.sort - b.sort)
@@ -295,7 +318,7 @@ const Messages = () => {
         <FlatList
           data={userData}
           renderItem={renderRow}
-          keyExtractor={data => data.id.toString()}
+          keyExtractor={(data) => data.id.toString()}
           showsHorizontalScrollIndicator={false}
           horizontal={false}
           ListHeaderComponent={renderuserHeader}
@@ -308,6 +331,12 @@ const Messages = () => {
         title='Processing'
         message='Please wait...'
       />
+      <ProfileImage
+        image={showAlert.profilePic}
+        title={showAlert.imageTitile}
+        handleCloseNotification={handleCloseNotification}
+        visible={showAlert.showAlert}
+      />
       {/* <ErrorAlert
             title={'Error!'}
             message={showAlert.message}
@@ -316,7 +345,6 @@ const Messages = () => {
           /> */}
     </SafeAreaView>
   );
-}
-
+};
 
 export default Messages;

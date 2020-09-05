@@ -1,4 +1,10 @@
-import { Alert, SingleButtonAlert, ErrorAlert, SuccessAlert } from './Alert';
+import {
+  Alert,
+  SingleButtonAlert,
+  ErrorAlert,
+  SuccessAlert,
+  ProfileImage,
+} from './Alert';
 import { SubmitButton } from './Buttons';
 import { InputField, InputFieldBorder } from './TextInput';
 import { Preloader } from './Preloader';
@@ -8,7 +14,7 @@ import { OtpInputs } from './OTPComponent';
 import { AuthBackground } from './AuthBackground';
 import { CustomToast } from './CustomToast';
 import { CustomModal } from './Modal';
-import { KeyboardAvoid } from './KeyboardAvoid'
+import { KeyboardAvoid } from './KeyboardAvoid';
 
 export {
   Alert,
@@ -25,5 +31,6 @@ export {
   CustomToast,
   Preloader,
   CustomModal,
-  KeyboardAvoid
+  KeyboardAvoid,
+  ProfileImage,
 };

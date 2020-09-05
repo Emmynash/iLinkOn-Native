@@ -2,7 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, Image, StyleSheet, ImageBackground } from 'react-native';
 import { useNavigation, useNavigationParam } from 'react-navigation-hooks';
-import { SubmitButton } from '../../components';
+import { AppLoading } from 'expo';
+import Splashscreen from 'react-native-splash-screen';
+import { SubmitButton, DisplayText } from '../../components';
 import styles from './styles';
 import { getProfile, saveProfile } from '../Utils/Utils';
 
@@ -14,6 +16,7 @@ const SplashScreen = () => {
     const checkLogin = async () => {
       let profile = await getProfile();
       if (typeof profile !== 'undefined') {
+        Splashscreen.hide();
         return navigate('Navigations');
       } else {
         return setRestoring(false);
@@ -25,7 +28,7 @@ const SplashScreen = () => {
   const handleGetStarted = () => {
     navigate('BoardingScreen');
   };
-  return restoring === true ? (
+  return restoring ? (
     <View style={{ flex: 1 }}>
       <Image
         style={styles.splasBg}
@@ -33,28 +36,28 @@ const SplashScreen = () => {
       />
     </View>
   ) : (
-      <ImageBackground
-        style={styles.backgroundImage}
-        resizeMode='cover'
-        blurRadius={0.3}
-        source={require('../../assets/images/Login-Register-vector.png')}
-      >
-        <View style={styles.newView}>
-          {/* <Image
+    <ImageBackground
+      style={styles.backgroundImage}
+      resizeMode='cover'
+      blurRadius={0.3}
+      source={require('../../assets/images/Login-Register-vector.png')}
+    >
+      <View style={styles.newView}>
+        {/* <Image
           style={styles.logo}
           source={require('../../assets/images/twitter.png')}
         /> */}
-          <SubmitButton
-            title={'Get Started'}
-            onPress={handleGetStarted}
-            btnStyle={styles.buttonWithImage}
-            titleStyle={StyleSheet.flatten(styles.buttonTxt)}
+        <SubmitButton
+          title={'Get Started'}
+          onPress={handleGetStarted}
+          btnStyle={styles.buttonWithImage}
+          titleStyle={StyleSheet.flatten(styles.buttonTxt)}
           // imgSrc={require('../../assets/images/loginIcon.png')}
           // imgStyle={StyleSheet.flatten(styles.iconDoor)}
-          />
-        </View>
-      </ImageBackground>
-    );
+        />
+      </View>
+    </ImageBackground>
+  );
 };
 
 export default SplashScreen;

@@ -20,7 +20,7 @@ import {
   View,
   FlatList,
   Text,
-  KeyboardAvoidingView
+  KeyboardAvoidingView,
 } from 'react-native';
 import {
   GetGroupMember,
@@ -29,7 +29,8 @@ import {
   LeaveGroupEndpoint,
   getProfile,
   getUserDetails,
-  CreateThreadEndpoint
+  CreateThreadEndpoint,
+  GetEventDetails,
 } from '../Utils/Utils';
 import {
   DisplayText,
@@ -37,7 +38,7 @@ import {
   InputField,
   SubmitButton,
   SuccessAlert,
-  CustomModal
+  CustomModal,
 } from '../../components';
 import { NavigationEvents } from 'react-navigation';
 
@@ -49,7 +50,8 @@ class GroupDetail extends Component {
       groupName: '',
       groupDescription: '',
       groupMember: '',
-      imageLink: 'https://gravatar.com/avatar/02bf38fddbfe9f82b94203336f9ebc41?s=200&d=retro',
+      imageLink:
+        'https://gravatar.com/avatar/02bf38fddbfe9f82b94203336f9ebc41?s=200&d=retro',
       memberData: [],
       customModal: false,
       token: '',
@@ -57,7 +59,8 @@ class GroupDetail extends Component {
       showAlert: '',
       groupId: '',
       eventData: [],
-      displayPhoto: ''
+      displayPhoto: '',
+      activeEvent: false,
     };
   }
 
@@ -65,13 +68,12 @@ class GroupDetail extends Component {
     await this.checkToken();
   }
 
-
   checkToken = async () => {
     const groupId = this.props.navigation.getParam('groupId');
     const name = this.props.navigation.getParam('name');
 
     let userDetail = await getUserDetails();
-    let profile = await getProfile()
+    let profile = await getProfile();
     // console.log("checking group id group detail....", userDetail);
 
     if (typeof userDetail.data !== 'undefined') {
@@ -92,41 +94,42 @@ class GroupDetail extends Component {
       actions: [
         NavigationActions.navigate({
           routeName: 'Navigations',
-        })
-      ]
+        }),
+      ],
     });
     return this.props.navigation.dispatch(resetAction);
-  }
+  };
 
   handleGetAllRequest = async (token, id) => {
     this.showLoadingDialogue();
     let header = {
       headers: {
         Accept: 'application/json',
-        Authorization: `${token}`
-      }
+        Authorization: `${token}`,
+      },
     };
     const groupDetail = fetch(`${GetGroupDetails}${id}`, header),
       allMember = fetch(`${GetGroupMember}${id}${'/members'}`, header),
       allEvent = fetch(`${GetGroupEvent}${id}${'/events'}`, header);
 
     Promise.all([groupDetail, allMember, allEvent])
-      .then(value => Promise.all(value.map(value => value.json())))
-      .then(finalResps => {
+      .then((value) => Promise.all(value.map((value) => value.json())))
+      .then((finalResps) => {
         const groupAPIResp = finalResps[0],
           allMemberAPIResp = finalResps[1],
           groupEventAPIResp = finalResps[2];
+
         this.getGroupById(groupAPIResp);
         this.getAllMembers(allMemberAPIResp);
         this.getGroupEvent(groupEventAPIResp);
       })
-      .catch(error => {
+      .catch((error) => {
         this.hideLoadingDialogue();
         console.log(error);
       });
   };
-  getGroupById = async groupRes => {
-    // console.log('getLatestGroups data', groupRes.data);
+
+  getGroupById = async (groupRes) => {
     try {
       if (groupRes) {
         this.hideLoadingDialogue();
@@ -143,16 +146,16 @@ class GroupDetail extends Component {
       this.hideLoadingDialogue();
     }
   };
-  getAllMembers = async memberRes => {
+  getAllMembers = async (memberRes) => {
     try {
       if (memberRes) {
         this.hideLoadingDialogue();
         // console.log('dfdfdfdfdfdfdfd', memberRes)
-        let member = memberRes.data.slice(0, 3)
+        let member = memberRes.data.slice(0, 3);
         return this.setState({
           groupMember: memberRes.data.length,
           memberData: member,
-        })
+        });
       } else {
         this.hideLoadingDialogue();
         alert('Failed to retrieve ');
@@ -161,13 +164,27 @@ class GroupDetail extends Component {
       this.hideLoadingDialogue();
     }
   };
-  getGroupEvent = async eventRes => {
+  getGroupEvent = async (eventRes) => {
     try {
       if (eventRes) {
         this.hideLoadingDialogue();
-        return this.setState({
-          eventData: eventRes.data
-        })
+
+        eventRes.data.map((data) => {
+          const currentDate = new Date().toISOString();
+          const endDate = data.dates[0].endDate;
+          let isActive = false;
+
+          if (endDate > currentDate) {
+            isActive = true;
+          }
+
+          this.setState({
+            eventData: eventRes.data,
+            activeEvent: isActive,
+          });
+
+          // console.log(this.state.activeEvent);
+        });
       } else {
         this.hideLoadingDialogue();
         alert('Failed to retrieve ');
@@ -181,25 +198,23 @@ class GroupDetail extends Component {
     return this.setState({
       showLoading: false,
     });
-  }
+  };
 
   showLoadingDialogue() {
     return this.setState({
       showLoading: true,
-    })
+    });
   }
   handleGoBack = () => {
-    return this.resetNavigation()
+    return this.resetNavigation();
     // this.props.navigation.goBack();
-  }
+  };
   handleShowMenuModal = () => {
-    alert('cooming soon')
-
-  }
+    alert('cooming soon');
+  };
   handleNotification = () => {
-    alert('hello no alert')
-  }
-
+    alert('hello no alert');
+  };
 
   showCustomeModal = () => {
     this.setState({
@@ -209,13 +224,13 @@ class GroupDetail extends Component {
 
   closeCustomModal = () => {
     return this.setState({
-      customModal: false
+      customModal: false,
     });
   };
 
   handleCloseModal = () => {
     return this.setState({
-      showAlert: false
+      showAlert: false,
     });
   };
 
@@ -226,7 +241,7 @@ class GroupDetail extends Component {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: token
+        Authorization: token,
       },
     };
     let endpoint = `${LeaveGroupEndpoint}${groupId}${'/leave'}`;
@@ -236,17 +251,17 @@ class GroupDetail extends Component {
       this.hideLoadingDialogue();
       this.setState({
         showAlert: true,
-        message: res.meta.message.toString()
+        message: res.meta.message.toString(),
       });
     } else if (res.meta.status == 200 || res.meta.status < 300) {
       this.hideLoadingDialogue();
-      this.resetNavigation()
+      this.resetNavigation();
     } else {
       if (res.meta.message) {
         this.hideLoadingDialogue();
         this.setState({
           showAlert: true,
-          message: res.meta.message.toString()
+          message: res.meta.message.toString(),
         });
       }
     }
@@ -255,22 +270,34 @@ class GroupDetail extends Component {
   handleCreateEvent = () => {
     return this.props.navigation.navigate('CreateEvent', {
       groupId: this.state.groupId,
-    })
-  }
+    });
+  };
 
   handleEventDetails = (item) => {
     return this.props.navigation.navigate('EventDetail', {
-      'eventId': item.id
-    })
-  }
+      eventId: item.id,
+    });
+  };
+
   renderGroupEvents = ({ item }) => {
     return (
       <View style={styles.flatListView}>
-        <TouchableOpacity onPress={() => this.handleEventDetails(item)} style={styles.cardView}>
+        <TouchableOpacity
+          onPress={() => this.handleEventDetails(item)}
+          style={styles.cardView}
+        >
           <View style={styles.div}>
             <View style={styles.cardImgView}>
-              <DisplayText styles={styles.cardImgTxt} onPress={() => this.handleEventDetails(item)} text={moment(item.dates[0].startDate).format('Do MMM')} />
-              <DisplayText styles={styles.timeTxt} onPress={() => this.handleEventDetails(item)} text={moment(item.dates[0].startDate).format('h:mm: a')} />
+              <DisplayText
+                styles={styles.cardImgTxt}
+                onPress={() => this.handleEventDetails(item)}
+                text={moment(item.dates[0].startDate).format('Do MMM')}
+              />
+              <DisplayText
+                styles={styles.timeTxt}
+                onPress={() => this.handleEventDetails(item)}
+                text={moment(item.dates[0].startDate).format('h:mm: a')}
+              />
             </View>
           </View>
           <View style={styles.divide}>
@@ -297,6 +324,19 @@ class GroupDetail extends Component {
                   text={`Posted: ${moment(item.createdAt).format('Do MMM YY')}`}
                 />
               </View>
+              <TouchableOpacity>
+                {item.isActive ? (
+                  <Image
+                    style={styles.menu}
+                    source={require('../../assets/images/notification-green.png')}
+                  />
+                ) : (
+                  <Image
+                    style={styles.menu}
+                    source={require('../../assets/images/notification-red.png')}
+                  />
+                )}
+              </TouchableOpacity>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
@@ -344,34 +384,34 @@ class GroupDetail extends Component {
   selectUser = async (item) => {
     const items = {
       name: item.member.fName,
-      displayPhoto: item.member.profilePhoto
-    }
-    console.log('item', item.member.profilePhoto)
+      displayPhoto: item.member.profilePhoto,
+    };
+    console.log('item', item.member.profilePhoto);
     const body = JSON.stringify({
-      'userId': item.memberId
-    })
-    await this.handleChat(body, items)
-  }
+      userId: item.memberId,
+    });
+    await this.handleChat(body, items);
+  };
   handleGroupChat = async () => {
-    const { groupId, groupName, imageLink } = this.state
+    const { groupId, groupName, imageLink } = this.state;
     const items = {
       name: groupName,
-      displayPhoto: imageLink
-    }
+      displayPhoto: imageLink,
+    };
     const body = JSON.stringify({
-      'groupId': groupId
-    })
-    await this.handleChat(body, items)
-  }
+      groupId: groupId,
+    });
+    await this.handleChat(body, items);
+  };
 
   handleChat = async (body, item) => {
-    const { token } = this.state
-    this.showLoadingDialogue()
+    const { token } = this.state;
+    this.showLoadingDialogue();
     const settings = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `${token}`
+        Authorization: `${token}`,
       },
       body: body,
     };
@@ -381,21 +421,20 @@ class GroupDetail extends Component {
       this.hideLoadingDialogue();
       this.setState({
         showAlert: true,
-        message: res.meta.message.toString()
+        message: res.meta.message.toString(),
       });
-
     } else if (res.meta.status == 200 && res.meta.status < 300) {
       this.hideLoadingDialogue();
       return this.props.navigation.navigate('Chat', {
-        'data': res.data,
-        'item': item
+        data: res.data,
+        item: item,
       });
     } else {
       if (res.meta.message) {
         this.hideLoadingDialogue();
         this.setState({
           showAlert: true,
-          message: res.meta.message.toString()
+          message: res.meta.message.toString(),
         });
       }
     }
@@ -403,47 +442,55 @@ class GroupDetail extends Component {
 
   handleAllMembers = () => {
     return this.props.navigation.navigate('GroupMembers', {
-      'groupId': this.state.groupId
-    })
-  }
+      groupId: this.state.groupId,
+    });
+  };
 
   renderMember = ({ item }) => {
     return (
       <View>
-        {
-          (item.profilePhoto == null) ?
-            <TouchableOpacity
-              onPress={() => this.selectUser(item)}
-              style={styles.imagesView}>
-              <Image
-                source={require('../../assets/images/user.png')}
-                style={StyleSheet.flatten(styles.memberImage)}
-              />
-            </TouchableOpacity>
-            :
-            <TouchableOpacity
-              style={styles.imagesView}
-              onPress={() => this.selectUser(item)}>
-              <Image
-                source={{ uri: item.profilePhoto }}
-                style={StyleSheet.flatten(styles.circleView)}
-              />
-            </TouchableOpacity>
-        }
+        {item.profilePhoto == null ? (
+          <TouchableOpacity
+            onPress={() => this.selectUser(item)}
+            style={styles.imagesView}
+          >
+            <Image
+              source={require('../../assets/images/user.png')}
+              style={StyleSheet.flatten(styles.memberImage)}
+            />
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            style={styles.imagesView}
+            onPress={() => this.selectUser(item)}
+          >
+            <Image
+              source={{ uri: item.profilePhoto }}
+              style={StyleSheet.flatten(styles.circleView)}
+            />
+          </TouchableOpacity>
+        )}
       </View>
-    )
-  }
+    );
+  };
 
   render() {
-    const { showLoading, imageLink, groupName, groupDescription, groupMember, memberData, eventData, customModal, showAlert } = this.state;
+    const {
+      showLoading,
+      imageLink,
+      groupName,
+      groupDescription,
+      groupMember,
+      memberData,
+      eventData,
+      customModal,
+      showAlert,
+    } = this.state;
 
     return (
       <SafeAreaView style={styles.mainContainer}>
         <View style={styles.headView}>
-          <TouchableOpacity
-            style={styles.backTp}
-            onPress={this.handleGoBack}
-          >
+          <TouchableOpacity style={styles.backTp} onPress={this.handleGoBack}>
             <Image
               style={styles.backLogo}
               source={require('../../assets/images/left-arrow.png')}
@@ -452,7 +499,8 @@ class GroupDetail extends Component {
           <View style={styles.headerIconView}>
             <TouchableOpacity
               onPress={() => this.handleGroupChat()}
-              style={styles.left}>
+              style={styles.left}
+            >
               <Image
                 style={styles.menu}
                 source={require('../../assets/images/chat.png')}
@@ -460,7 +508,8 @@ class GroupDetail extends Component {
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => this.showCustomeModal()}
-              style={styles.leftView}>
+              style={styles.leftView}
+            >
               <Image
                 onPress={() => this.showCustomeModal()}
                 style={styles.menu}
@@ -474,7 +523,7 @@ class GroupDetail extends Component {
             <Image
               source={{ uri: imageLink }}
               style={StyleSheet.flatten(styles.csView)}
-            // source={require('../../assets/images/flower.jpg')}
+              // source={require('../../assets/images/flower.jpg')}
             />
             <View style={styles.gpDetailHeader}>
               <DisplayText
@@ -494,10 +543,10 @@ class GroupDetail extends Component {
                   style={StyleSheet.flatten(styles.memberIcon)}
                 />
                 {
-
                   <DisplayText
                     styles={StyleSheet.flatten(styles.memberText)}
-                    text={`${groupMember}${' Members'}`} />
+                    text={`${groupMember}${' Members'}`}
+                  />
                 }
               </View>
             </View>
@@ -512,24 +561,23 @@ class GroupDetail extends Component {
                 <FlatList
                   data={memberData}
                   renderItem={this.renderMember}
-                  keyExtractor={data => data.id.toString()}
+                  keyExtractor={(data) => data.id.toString()}
                   showsHorizontalScrollIndicator={false}
                   horizontal={true}
                 />
-                {
-                  (groupMember < 3) ?
-                    <DisplayText
-                      onPress={this.handleAllMembers}
-                      text={'more'}
-                      styles={StyleSheet.flatten(styles.more)}
-                    />
-                    :
-                    <DisplayText
-                      onPress={this.handleAllMembers}
-                      text={`${'+ '}${groupMember - 3}${' more'}`}
-                      styles={StyleSheet.flatten(styles.more)}
-                    />
-                }
+                {groupMember < 3 ? (
+                  <DisplayText
+                    onPress={this.handleAllMembers}
+                    text={'more'}
+                    styles={StyleSheet.flatten(styles.more)}
+                  />
+                ) : (
+                  <DisplayText
+                    onPress={this.handleAllMembers}
+                    text={`${'+ '}${groupMember - 3}${' more'}`}
+                    styles={StyleSheet.flatten(styles.more)}
+                  />
+                )}
               </View>
               <View style={styles.listView}>
                 {/* Groups Designs */}
@@ -547,14 +595,13 @@ class GroupDetail extends Component {
                   <FlatList
                     data={eventData}
                     renderItem={this.renderGroupEvents}
-                    keyExtractor={data => data.id.toString()}
+                    keyExtractor={(data) => data.id.toString()}
                     showsVerticalScrollIndicator={false}
                     horizontal={false}
                   />
                 </View>
               </View>
             </View>
-
           </View>
         </ScrollView>
         <TouchableOpacity
@@ -567,8 +614,8 @@ class GroupDetail extends Component {
         </TouchableOpacity>
         <ProgressDialog
           visible={showLoading}
-          title="Progress Dialog"
-          message="Please, wait..."
+          title='Progress Dialog'
+          message='Please, wait...'
         />
         <CustomModal
           onPress={() => {
@@ -578,8 +625,10 @@ class GroupDetail extends Component {
           modalStyle={styles.modal}
           handleCloseModal={this.closeCustomModal}
         >
-          <TouchableOpacity onPress={this.closeCustomModal}
-            style={styles.modalContainer}>
+          <TouchableOpacity
+            onPress={this.closeCustomModal}
+            style={styles.modalContainer}
+          >
             <View style={styles.joinGropView}>
               {/* <SubmitButton
                 onPress={() => {

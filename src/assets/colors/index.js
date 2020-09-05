@@ -13,6 +13,7 @@ export default {
   darkSilver: '#bdc3c7',
   text_color: '#002E0D',
   background_color: '#f6f6f6',
+  OTP_bg_color: '#FFFFFF',
   button_border: '#0E802E',
   mediumseagreen: '#3CB371',
   green_background: '#0F959A',
@@ -29,5 +30,5 @@ export default {
   sliderCard: '#F4F5F4',
   darkText: '#949494',
   yellow: '#FFCC00',
-  backgroundGray: '	#DCDCDC	'
+  backgroundGray: '	#DCDCDC	',
 };

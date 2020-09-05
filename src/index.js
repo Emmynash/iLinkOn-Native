@@ -16,7 +16,7 @@ const App = () => {
     (async () => {
       await Font.loadAsync({
         'segoe-ui-bold': require('../src/assets/fonts/segoe-ui-bold.ttf'),
-        'segoe-ui': require('../src/assets/fonts/segoe-ui.ttf')
+        'segoe-ui': require('../src/assets/fonts/segoe-ui.ttf'),
       });
 
       setfontLoad(true);
@@ -34,8 +34,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    elevation: 4
-  }
+    elevation: 4,
+  },
 });
 
 export default App;

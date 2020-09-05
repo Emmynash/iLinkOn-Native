@@ -1,18 +1,16 @@
 import React from 'react';
 import { ImageBackground, View } from 'react-native';
 import PropTypes from 'prop-types';
-import styles from './styles'
+import styles from './styles';
 
-
-const AuthBackground = ({ children })=>(
-  <ImageBackground style={styles.backgroundImage}
-    resizeMode = 'cover'
+const AuthBackground = ({ children }) => (
+  <ImageBackground
+    style={styles.backgroundImage}
+    resizeMode='cover'
     blurRadius={0.3}
-    source={require('../../assets/images/bg.png')}>
-
-    <View style={styles.overlay}>
-      {children}
-    </View>
+    source={require('../../assets/images/bg.png')}
+  >
+    <View style={styles.overlay}>{children}</View>
   </ImageBackground>
 );
 
