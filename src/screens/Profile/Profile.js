@@ -164,7 +164,7 @@ function Profile({ navigation }) {
       });
   };
   const handleSaveProfileImage = (base64Image) => {
-    console.log('base64imageeeee:', base64Image);
+    console.log('base64Image:', base64Image);
     setProfileImage(base64Image);
   };
   const handleGetAllRequest = async (token) => {
@@ -312,7 +312,7 @@ function Profile({ navigation }) {
     const response = await fetch(endpoint, settings);
 
     const res = await response.json();
-    console.log('hoodjdhdhdhd', res);
+    console.log('body', res);
     if (res.meta.status >= 300) {
       hideLoadingDialogue();
       setShowAlert({
