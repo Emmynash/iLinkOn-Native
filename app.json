@@ -19,6 +19,7 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
+      "usesIcloudStorage": true,
       "buildNumber": "2.0.0",
       "loadJSInBackgroundExperimental": true,
       "bundleIdentifier": "com.ilinkon.app",
