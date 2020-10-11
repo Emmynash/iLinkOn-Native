@@ -306,7 +306,7 @@ const VerifyOtp = ({ navigation }) => {
           />
         </View>
         <DisplayText
-          text={'Enter OTP'}
+          text={'Your OTP is your password'}
           styles={StyleSheet.flatten(styles.LoginTxt)}
         />
         <DisplayText
