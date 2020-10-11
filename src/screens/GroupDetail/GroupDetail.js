@@ -326,15 +326,9 @@ class GroupDetail extends Component {
               </View>
               <TouchableOpacity>
                 {item.isActive ? (
-                  <Image
-                    style={styles.menu}
-                    source={require('../../assets/images/notification-green.png')}
-                  />
+                  <DisplayText style={styles.menu} text={'ACTIVE'} />
                 ) : (
-                  <Image
-                    style={styles.menu}
-                    source={require('../../assets/images/notification-red.png')}
-                  />
+                  {}
                 )}
               </TouchableOpacity>
             </TouchableOpacity>
