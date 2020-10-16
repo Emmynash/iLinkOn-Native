@@ -16,6 +16,7 @@ import {
   Animated,
   Dimensions,
   UIManager,
+  Slider,
 } from 'react-native';
 import KeyboardSpacer from 'react-native-keyboard-spacer';
 import Constants from 'expo-constants';
@@ -24,9 +25,8 @@ import * as Permissions from 'expo-permissions';
 import * as DocumentPicker from 'expo-document-picker';
 import { Audio, AVPlaybackStatus } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
+import base64 from 'react-native-base64';
 import AutogrowInput from 'react-native-autogrow-input';
-// import { AudioRecorder, AudioUtils } from 'react-native-audio';
-// import Sound from 'react-native-sound';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { GiftedChat, Bubble } from 'react-native-gifted-chat';
 import { ProgressDialog } from 'react-native-simple-dialogs';
@@ -44,11 +44,50 @@ import {
   getProfile,
 } from '../Utils/Utils';
 import moment from 'moment';
+import axios from 'react-native-axios';
+import { Asset } from 'expo-asset';
+
 const { State: TextInputState } = TextInput;
+
+class Icon {
+  constructor(module, width, height) {
+    this.module = module;
+    this.width = width;
+    this.height = height;
+    Asset.fromModule(this.module).downloadAsync();
+  }
+}
+
+const ICON_PLAY_BUTTON = new Icon(
+  require('../../assets/images/play_button.png'),
+  34,
+  51
+);
+const ICON_PAUSE_BUTTON = new Icon(
+  require('../../assets/images/pause_button.png'),
+  34,
+  51
+);
+const ICON_TRACK_1 = new Icon(
+  require('../../assets/images/track_1.png'),
+  166,
+  5
+);
+const ICON_THUMB_1 = new Icon(
+  require('../../assets/images/thumb_1.png'),
+  18,
+  19
+);
+const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = Dimensions.get('window');
+const BACKGROUND_COLOR = '#FFF8ED';
 
 export default class Chat extends Component {
   constructor(props) {
     super(props);
+    this.recording = null;
+    this.sound = null;
+    this.isSeeking = false;
+    this.shouldPlayAtEndOfSeek = false;
     this.state = {
       messages: [],
       inputBarText: '',
@@ -84,14 +123,16 @@ export default class Chat extends Component {
         shouldPlay: false,
         isPlaying: false,
         isRecording: false,
-        fontLoaded: false,
         shouldCorrectPitch: true,
         volume: 1.0,
         rate: 1.0,
       },
     };
 
-    this.recordingSettings = Audio.RECORDING_OPTIONS_PRESET_LOW_QUALITY;
+    // this.recordingSettings = Audio.RECORDING_OPTIONS_PRESET_LOW_QUALITY;
+    this.recordingSettings = JSON.parse(
+      JSON.stringify(Audio.RECORDING_OPTIONS_PRESET_LOW_QUALITY)
+    );
   }
   //fun keyboard stuff- we use these to get the end of the ScrollView to "follow" the top of the InputBar as the keyboard rises and falls
   UNSAFE_componentWillMount() {
@@ -130,7 +171,7 @@ export default class Chat extends Component {
       item = navigation.getParam('item');
     let profile = await getProfile();
     let userDetails = await getUserDetails();
-    console.log('readItem', item);
+    // console.log('readItem', item);
     const token = profile.access_token,
       name = userDetails.fName,
       id = userDetails.id;
@@ -155,37 +196,11 @@ export default class Chat extends Component {
     );
   }
 
-  checkAudioPermission = async () => {
-    if (Constants.platform.ios) {
-      const { status } = await Permissions.askAsync(
-        Permissions.AUDIO_RECORDING
-      );
-      if (status !== 'granted') {
-        alert(translations.permission);
-        return false;
-      } else {
-        this.setState({
-          audioState: {
-            haveRecordingPermissions: true,
-          },
-        });
-        return this._onRecordPressed;
-      }
-    } else {
-      this.setState({
-        audioState: {
-          haveRecordingPermissions: true,
-        },
-      });
-      return this._onRecordPressed;
-    }
-  };
-
-  _updateScreenForSoundStatus = (status = AVPlaybackStatus) => {
+  _updateScreenForSoundStatus = (status) => {
     if (status.isLoaded) {
       this.setState({
         audioState: {
-          soundDuration: status.durationMillis ?? null,
+          soundDuration: status.durationMillis,
           soundPosition: status.positionMillis,
           shouldPlay: status.shouldPlay,
           isPlaying: status.isPlaying,
@@ -210,7 +225,20 @@ export default class Chat extends Component {
     }
   };
 
-  _updateScreenForRecordingStatus = (status = Audio.RecordingStatus) => {
+  _checkAudioPermission = async () => {
+    const response = await Permissions.askAsync(Permissions.AUDIO_RECORDING);
+    if (response.status === 'granted') {
+      this.setState({
+        audioState: { haveRecordingPermissions: response.status === 'granted' },
+      });
+
+      return this._handleAudio();
+    }
+
+    return false;
+  };
+
+  _updateScreenForRecordingStatus = (status) => {
     if (status.canRecord) {
       this.setState({
         audioState: {
@@ -231,7 +259,8 @@ export default class Chat extends Component {
     }
   };
 
-  _stopPlaybackAndBeginRecording = async () => {
+  async _stopPlaybackAndBeginRecording() {
+    console.log('isRecording');
     this.setState({
       audioState: { isLoading: true },
     });
@@ -263,26 +292,25 @@ export default class Chat extends Component {
     this.setState({
       audioState: { isLoading: false },
     });
-  };
+  }
 
-  _stopRecordingAndEnablePlayback = async () => {
+  async _stopRecordingAndEnablePlayback() {
+    console.log('isDoneRecording');
     this.setState({
       audioState: { isLoading: true },
     });
-    if (!this.recording) {
-      return;
-    }
     try {
       await this.recording.stopAndUnloadAsync();
     } catch (error) {
       // Do nothing -- we are already unloaded.
     }
-    const info = await FileSystem.getInfoAsync(this.recording.getURI() || '');
+    const info = await FileSystem.getInfoAsync(this.recording.getURI());
     console.log(`FILE INFO: ${JSON.stringify(info)}`);
     await Audio.setAudioModeAsync({
       allowsRecordingIOS: false,
       interruptionModeIOS: Audio.INTERRUPTION_MODE_IOS_DO_NOT_MIX,
       playsInSilentModeIOS: true,
+      playsInSilentLockedModeIOS: true,
       shouldDuckAndroid: true,
       interruptionModeAndroid: Audio.INTERRUPTION_MODE_ANDROID_DO_NOT_MIX,
       playThroughEarpieceAndroid: false,
@@ -291,27 +319,25 @@ export default class Chat extends Component {
     const { sound, status } = await this.recording.createNewLoadedSoundAsync(
       {
         isLooping: true,
-        isMuted: this.state.muted,
-        volume: this.state.volume,
-        rate: this.state.rate,
-        shouldCorrectPitch: this.state.shouldCorrectPitch,
+        isMuted: this.state.audioState.muted,
+        volume: this.state.audioState.volume,
+        rate: this.state.audioState.rate,
+        shouldCorrectPitch: this.state.audioState.shouldCorrectPitch,
       },
       this._updateScreenForSoundStatus
     );
     this.sound = sound;
+
     this.setState({
       audioState: { isLoading: false },
     });
-  };
+  }
 
-  _onRecordPressed = () => {
-    console.log('onPress');
+  _handleAudio = async () => {
     if (this.state.audioState.isRecording) {
-      console.log('Enable playback');
-      return this._stopRecordingAndEnablePlayback();
+      this._stopRecordingAndEnablePlayback();
     } else {
-      console.log('Begin recording');
-      return this._stopPlaybackAndBeginRecording();
+      this._stopPlaybackAndBeginRecording();
     }
   };
 
@@ -325,23 +351,133 @@ export default class Chat extends Component {
     }
   };
 
-  _onStopPressed = () => {
+  _trySetRate = async (rate, shouldCorrectPitch) => {
     if (this.sound != null) {
-      this.sound.stopAsync();
+      try {
+        await this.sound.setRateAsync(rate, shouldCorrectPitch);
+      } catch (error) {
+        console.log(
+          "Rate changing could not be performed, possibly because the client's Android API is too old",
+          error
+        );
+      }
     }
   };
 
-  _onMutePressed = () => {
-    if (this.sound != null) {
-      this.sound.setIsMutedAsync(!this.state.muted);
+  _onRateSliderSlidingComplete = async (value) => {
+    this._trySetRate(value * RATE_SCALE, this.state.shouldCorrectPitch);
+  };
+
+  _onSeekSliderValueChange = (value) => {
+    if (this.sound != null && !this.isSeeking) {
+      this.isSeeking = true;
+      this.shouldPlayAtEndOfSeek = this.state.audioState.shouldPlay;
+      this.sound.pauseAsync();
     }
+  };
+
+  _onSeekSliderSlidingComplete = async (value) => {
+    if (this.sound != null) {
+      this.isSeeking = false;
+      const seekPosition = value * this.state.audioState.soundDuration;
+      if (this.shouldPlayAtEndOfSeek) {
+        this.sound.playFromPositionAsync(seekPosition);
+      } else {
+        this.sound.setPositionAsync(seekPosition);
+      }
+    }
+  };
+
+  _getSeekSliderPosition() {
+    if (
+      this.sound != null &&
+      this.state.audioState.soundPosition != null &&
+      this.state.audioState.soundDuration != null
+    ) {
+      return (
+        this.state.audioState.soundPosition /
+        this.state.audioState.soundDuration
+      );
+    }
+    return 0;
+  }
+
+  _getMMSSFromMillis(millis) {
+    const totalSeconds = millis / 1000;
+    const seconds = Math.floor(totalSeconds % 60);
+    const minutes = Math.floor(totalSeconds / 60);
+
+    const padWithZero = (number) => {
+      const string = number.toString();
+      if (number < 10) {
+        return '0' + string;
+      }
+      return string;
+    };
+    return padWithZero(minutes) + ':' + padWithZero(seconds);
+  }
+
+  _getPlaybackTimestamp() {
+    if (
+      this.sound != null &&
+      this.state.audioState.soundPosition != null &&
+      this.state.audioState.soundDuration != null
+    ) {
+      return `${this._getMMSSFromMillis(
+        this.state.audioState.soundPosition
+      )} / ${this._getMMSSFromMillis(this.state.audioState.soundDuration)}`;
+    }
+    return '';
+  }
+
+  _renderAudio = () => {
+    this.state.audioState.isPlaybackAllowed
+      ? render(
+          <View style={playerStyle.volumeContainer}>
+            <View style={playerStyle.playStopContainer}>
+              <TouchableHighlight
+                underlayColor={BACKGROUND_COLOR}
+                style={playerStyle.wrapper}
+                onPress={this._onPlayPausePressed}
+                disabled={!this.state.isPlaybackAllowed || this.state.isLoading}
+              >
+                <Image
+                  style={playerStyle.image}
+                  source={
+                    this.state.audioState.isPlaying
+                      ? ICON_PAUSE_BUTTON.module
+                      : ICON_PLAY_BUTTON.module
+                  }
+                />
+              </TouchableHighlight>
+            </View>
+            <View style={playerStyle.playbackContainer}>
+              <Slider
+                style={playerStyle.playbackSlider}
+                trackImage={ICON_TRACK_1.module}
+                thumbImage={ICON_THUMB_1.module}
+                value={this._getSeekSliderPosition()}
+                onValueChange={this._onSeekSliderValueChange}
+                onSlidingComplete={this._onSeekSliderSlidingComplete}
+                disabled={
+                  !this.state.audioState.isPlaybackAllowed ||
+                  this.state.audioState.isLoading
+                }
+              />
+              <Text style={[playerStyle.playbackTimestamp]}>
+                {this._getPlaybackTimestamp()}
+              </Text>
+            </View>
+          </View>
+        )
+      : null;
   };
 
   getPermissionAsync = async () => {
     if (Constants.platform.ios) {
       const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
       if (status !== 'granted') {
-        alert(translations.permission);
+        console.log('permission not granted');
         return false;
       } else {
         return this.pickImage();
@@ -380,6 +516,7 @@ export default class Chat extends Component {
       .then(async (res) => {
         let dataUrl = await res.json();
         console.log(dataUrl.url);
+        this.setState({ image: data.Url.url });
         this.handleSaveData(dataUrl.url);
         this.hideLoadingDialogue();
       })
@@ -393,7 +530,7 @@ export default class Chat extends Component {
     if (Constants.platform.ios) {
       const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
       if (status !== 'granted') {
-        alert(translations.permission);
+        console.log('permission not granted');
         return false;
       } else {
         return this.pickDocument();
@@ -404,39 +541,77 @@ export default class Chat extends Component {
   };
 
   pickDocument = async () => {
-    let result = await DocumentPicker.getDocumentAsync({});
+    let result = await DocumentPicker.getDocumentAsync({
+      copyToCacheDirectory: false,
+    });
 
     if (!result.cancelled) {
-      let base64Doc = `data:application/pdf;base64,${result.uri}`;
-      // console.log(base64Doc);
-      return this.handleDocument(base64Doc);
+      // let base64Doc = `${base64.encode(result.uri)}`;
+      const source = {
+        name: result.name,
+        size: result.size,
+        uri: result.uri,
+        type: 'application/pdf',
+      };
+      console.log('picked doc', source);
+      return this.handleDocument(source);
     }
   };
 
-  handleDocument = async (base64Doc) => {
-    let CLOUDINARY_URL =
-      'https://res.cloudinary.com/https-cyberve-com/image/upload';
-    fetch(CLOUDINARY_URL, {
-      body: JSON.stringify({
-        file: base64Doc,
-        upload_preset: 'kvdcspfl',
-      }),
-      headers: {
-        'content-type': 'application/json',
-      },
+  handleDocument = async (file) => {
+    // let CLOUDINARY_URL =
+    //   'https://api.cloudinary.com/https-cyberve-com/auto/upload/';
+    // fetch(CLOUDINARY_URL, {
+    //   headers: {
+    //     Accept: 'application/json, text/plain, */*',
+    //     'Content-Type': 'application/json',
+    //   },
+    //   body: JSON.stringify({
+    //     file: file,
+    //     upload_preset: 'kvdcspfl',
+    //     api_key: '573257972757345',
+    //     api_secret: 'zPgSo2D5urNNqgt6hPEqvTkjfN8',
+    //     format: 'pdf',
+    //   }),
+    //   method: 'POST',
+    // })
+    //   .then(async (res) => {
+    //     let dataUrl = await res.json();
+    //     console.log('data', dataUrl);
+
+    //     // this.handleSaveData(dataUrl.url);
+    //     this.hideLoadingDialogue();
+    //   })
+    //   .catch((err) => {
+    //     this.hideLoadingDialogue();
+    //     console.log('Error occured:', err);
+    //   });
+
+    var formdata = new FormData();
+
+    formdata.append('file', file);
+    formdata.append('cloud_name', 'https-cyberve-com');
+    formdata.append('upload_preset', 'kvdcspfl');
+
+    axios({
+      url: 'http://api.cloudinary.com/v1_1/https-cyberve-com/auto/upload',
       method: 'POST',
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, GET, PUT, OPTIONS, DELETE',
+        'Access-Control-Allow-Headers':
+          'Access-Control-Allow-Methods, Access-Control-Allow-Origin, Origin, Accept, Content-Type',
+        Accept: 'application/x-www-form-urlencoded',
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      data: formdata,
     })
       .then(async (res) => {
-        let dataUrl = await res.json();
-        console.log('Data', res);
-
-        this.handleSaveData(dataUrl.url);
-        this.hideLoadingDialogue();
+        console.log(res);
+        let json = await res.json();
+        console.log(JSON.stringify(json.secure_url));
       })
-      .catch((err) => {
-        this.hideLoadingDialogue();
-        console.log('Error:', err);
-      });
+      .catch((err) => console.log('error', err));
   };
 
   handleSaveData = (data) => {
@@ -446,34 +621,13 @@ export default class Chat extends Component {
     });
   };
 
-  renderAndroidMicrophone() {
-    if (Platform.OS === 'android') {
-      return (
-        <TouchableOpacity
-          onPress={this.checkPermission}
-          // style={styles.headerImage}
-        >
-          <Ionicons
-            name='ios-mic'
-            size={35}
-            hitSlop={{ top: 20, bottom: 20, left: 50, right: 50 }}
-            color={this.state.startAudio ? 'red' : 'black'}
-            style={{
-              bottom: 50,
-              right: Dimensions.get('window').width / 2,
-              position: 'absolute',
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 0 },
-              shadowOpacity: 0.5,
-              zIndex: 2,
-              backgroundColor: 'transparent',
-            }}
-            onPress={this.handleAudio}
-          />
-        </TouchableOpacity>
-      );
-    }
-  }
+  _renderPicture = () => {
+    this.state.image !== '' ? (
+      <View>
+        <Image source={this.state.image} />
+      </View>
+    ) : null;
+  };
 
   //this is a bit sloppy: this is to make sure it scrolls to the bottom when a message is added, but
   //the component could update for other reasons, for which we wouldn't want it to scroll to the bottom.
@@ -527,10 +681,10 @@ export default class Chat extends Component {
     // websocket onopen event listener
     connection.onopen = () => {
       this.setState({ connection: connection });
-      console.log(
-        'connected websocket main component.........',
-        connection.readyState
-      );
+      // console.log(
+      //   'connected websocket main component.........',
+      //   connection.readyState
+      // );
       that.timeout = 250; // reset timer to 250 on open of websocket
       clearTimeout(connectInterval); // clear Interval onOpen of websocket
     };
@@ -542,13 +696,13 @@ export default class Chat extends Component {
 
     // websocket onclose event listener
     connection.onclose = (e) => {
-      console.log(
-        `Socket is closed. attempt reconnecting in ${Math.min(
-          10000 / 1000,
-          (that.timeout + that.timeout) / 1000
-        )} second.`,
-        e
-      );
+      // console.log(
+      //   `Socket is closed. attempt reconnecting in ${Math.min(
+      //     10000 / 1000,
+      //     (that.timeout + that.timeout) / 1000
+      //   )} second.`,
+      //   e
+      // );
       that.timeout = that.timeout + that.timeout; //increment retry interval
       connectInterval = setTimeout(this.check, Math.min(10000, that.timeout)); //call check function after timeout
     };
@@ -781,6 +935,7 @@ export default class Chat extends Component {
               style={styles.messagesBubble}
             >
               {newMessages}
+              {this._renderAudio()}
             </ScrollView>
             {/* <InputBar onSendPressed={() => this._sendMessage()}
             onSizeChange={() => this._onInputSizeChange()}
@@ -820,6 +975,44 @@ export default class Chat extends Component {
               style={styles.messagesBubble}
             >
               {newMessages}
+              <View style={playerStyle.volumeContainer}>
+                <View style={playerStyle.playStopContainer}>
+                  <TouchableHighlight
+                    style={playerStyle.wrapper}
+                    onPress={this._onPlayPausePressed}
+                    // disabled={
+                    //   !this.state.isPlaybackAllowed ||
+                    //   this.state.audioState.isLoading
+                    // }
+                  >
+                    <Image
+                      style={playerStyle.image}
+                      source={
+                        this.state.audioState.isPlaying
+                          ? ICON_PAUSE_BUTTON.module
+                          : ICON_PLAY_BUTTON.module
+                      }
+                    />
+                  </TouchableHighlight>
+                </View>
+                <View style={playerStyle.playbackContainer}>
+                  <Slider
+                    style={playerStyle.playbackSlider}
+                    trackImage={ICON_TRACK_1.module}
+                    thumbImage={ICON_THUMB_1.module}
+                    value={this._getSeekSliderPosition()}
+                    onValueChange={this._onSeekSliderValueChange}
+                    onSlidingComplete={this._onSeekSliderSlidingComplete}
+                    disabled={
+                      !this.state.audioState.isPlaybackAllowed ||
+                      this.state.audioState.isLoading
+                    }
+                  />
+                  <Text style={[playerStyle.playbackTimestamp]}>
+                    {this._getPlaybackTimestamp()}
+                  </Text>
+                </View>
+              </View>
             </ScrollView>
             {/* <InputBar onSendPressed={() => this._sendMessage()}
           onSizeChange={() => this._onInputSizeChange()}
@@ -836,13 +1029,12 @@ export default class Chat extends Component {
               />
 
               <TouchableOpacity
-                onPress={this.checkAudioPermission}
-                disabled={this.state.isLoading}
+                onPress={this._handleAudio}
+                disabled={this.state.audioState.isLoading}
               >
                 <Image
                   source={require('../../assets/images/microphone-button.png')}
                   style={styles.micIcon}
-                  onPress={this.handleAddPicture}
                 />
               </TouchableOpacity>
 
@@ -851,7 +1043,7 @@ export default class Chat extends Component {
                 onPress={() => this._sendMessage()}
               >
                 <Image
-                  source={require('../../assets/images/send_button_1.png')}
+                  source={require('../../assets/images/send_button.png')}
                   style={styles.sendIcon}
                 />
               </TouchableHighlight>
@@ -907,3 +1099,69 @@ class MessageBubble extends Component {
     );
   }
 }
+
+const playerStyle = StyleSheet.create({
+  container: {
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    alignSelf: 'stretch',
+    backgroundColor: BACKGROUND_COLOR,
+    // minHeight: DEVICE_HEIGHT,
+    // maxHeight: DEVICE_HEIGHT,
+  },
+  wrapper: {},
+  halfScreenContainer: {
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    alignSelf: 'stretch',
+    // minHeight: DEVICE_HEIGHT / 2.0,
+    // maxHeight: DEVICE_HEIGHT / 2.0,
+  },
+  playbackContainer: {
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    alignSelf: 'stretch',
+    minHeight: ICON_THUMB_1.height * 2.0,
+    maxHeight: ICON_THUMB_1.height * 2.0,
+  },
+  playbackSlider: {
+    alignSelf: 'stretch',
+  },
+
+  recordingTimestamp: {
+    paddingLeft: 20,
+  },
+  playbackTimestamp: {
+    textAlign: 'right',
+    alignSelf: 'stretch',
+    paddingRight: 20,
+  },
+  image: {
+    backgroundColor: BACKGROUND_COLOR,
+  },
+
+  playStopContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minWidth: (ICON_PLAY_BUTTON.width * 3.0) / 2.0,
+    maxWidth: (ICON_PLAY_BUTTON.width * 3.0) / 2.0,
+  },
+
+  buttonsContainerBottomRow: {
+    maxHeight: ICON_THUMB_1.height,
+    alignSelf: 'stretch',
+    paddingRight: 20,
+    paddingLeft: 20,
+  },
+  rateSlider: {
+    width: DEVICE_WIDTH / 2.0,
+  },
+});
