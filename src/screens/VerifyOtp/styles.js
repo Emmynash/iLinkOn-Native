@@ -50,7 +50,7 @@ let styles = StyleSheet.create({
   // },
   SignupTxt: {
     fontFamily: theme.headerFont,
-    fontSize: 15,
+    fontSize: theme.SmallerFont,
     marginVertical: 1,
     color: colors.black,
   },
@@ -69,8 +69,8 @@ let styles = StyleSheet.create({
   },
   LoginTxt: {
     fontFamily: theme.LightFont,
-    fontSize: theme.LargeFont,
-    marginVertical: 8,
+    fontSize: theme.SmallerFont,
+    marginVertical: 4,
     color: theme.textGray,
   },
   Signup: {
