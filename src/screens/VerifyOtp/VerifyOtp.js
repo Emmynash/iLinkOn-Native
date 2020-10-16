@@ -306,12 +306,12 @@ const VerifyOtp = ({ navigation }) => {
           />
         </View>
         <DisplayText
-          text={'Enter OTP'}
-          styles={StyleSheet.flatten(styles.LoginTxt)}
-        />
-        <DisplayText
           text={'We have sent an OTP to your number'}
           styles={StyleSheet.flatten(styles.SignupTxt)}
+        />
+        <DisplayText
+          text={'Your OTP is your password'}
+          styles={StyleSheet.flatten(styles.LoginTxt)}
         />
 
         <View style={styles.inputField}>
@@ -364,7 +364,7 @@ const VerifyOtp = ({ navigation }) => {
               }}
             />
           </View>
-          <KeyboardSpacer />
+          <KeyboardSpacer topSpacing={150} />
           <View style={{ flex: 1, flexDirection: 'row', margin: 20 }}>
             <DisplayText
               text={`Did not receive OTP?`}
