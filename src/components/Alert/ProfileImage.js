@@ -73,8 +73,8 @@ export default class ProfileImage extends Component {
 }
 
 ProfileImage.propTypes = {
-  title: PropTypes.string.isRequired,
-  image: PropTypes.string.isRequired,
+  title: PropTypes.string,
+  image: PropTypes.string,
   visible: PropTypes.bool.isRequired,
 };
 
