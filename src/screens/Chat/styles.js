@@ -224,8 +224,8 @@ export default styles = StyleSheet.create({
   },
   micIcon: {
     resizeMode: 'contain',
-    height: 35,
-    width: 35,
+    height: 30,
+    width: 30,
   },
   AttachIcon: {
     marginLeft: 100,
