@@ -326,9 +326,9 @@ class GroupDetail extends Component {
               </View>
               <TouchableOpacity>
                 {item.isActive ? (
-                  <DisplayText style={styles.menu} text={'ACTIVE'} />
+                  <DisplayText styles={styles.activeText} text={'ACTIVE'} />
                 ) : (
-                  {}
+                  <DisplayText style={styles.menu} text={''} />
                 )}
               </TouchableOpacity>
             </TouchableOpacity>
