@@ -62,8 +62,13 @@ let styles = StyleSheet.create({
     resizeMode: 'contain',
     width: 20,
     height: 20,
-    color: 'green',
   },
+
+  activeText: {
+    color: colors.green,
+    fontWeight: 'bold',
+  },
+
   textView: {
     flexDirection: 'row',
     width: '100%',
