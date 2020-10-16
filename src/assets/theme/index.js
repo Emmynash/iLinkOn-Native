@@ -5,7 +5,7 @@ export default defaultTheme = {
   LargeFont: 24,
   MediumFont: 18,
   SmallFont: 16,
-  SmallerFont : 14,
+  SmallerFont: 14,
   thinyFont: 12,
   //Colors
   primaryTextColor: colors.darkText,
@@ -31,6 +31,6 @@ export default defaultTheme = {
   inputRadius: 12,
   // primaryFont: 'Roboto-Regular',
   LightFont: 'segoe-ui',
-  headerFont: 'segoe-ui-bold', 
-}
+  headerFont: 'segoe-ui-bold',
+};
 //₦
