@@ -34,7 +34,7 @@ import DropdownAlert from 'react-native-dropdownalert';
 import NavigationBar from 'react-native-navbar';
 import colors from '../../assets/colors';
 import styles from './styles';
-import { DisplayText, KeyboardAvoid } from '../../components';
+import { DisplayText, ProfileImage } from '../../components';
 import {
   CreateThreadEndpoint,
   getUserDetails,
@@ -46,6 +46,7 @@ import {
 import moment from 'moment';
 import axios from 'react-native-axios';
 import { Asset } from 'expo-asset';
+import RNFetchBlob from 'rn-fetch-blob';
 
 const { State: TextInputState } = TextInput;
 
@@ -100,10 +101,13 @@ export default class Chat extends Component {
       title: '',
       time: '',
       name: '',
-      image: '',
+      image:
+        'http://res.cloudinary.com/https-cyberve-com/image/upload/v1602889530/z6h4pjrkyc3po6xgp1tn.jpg',
       responseMessage: '',
       adminTime: '',
       showAlert: false,
+      showSuccessAlert: false,
+      profilePic: '',
       showLoading: false,
       displayPhoto: '',
       threadId: '',
@@ -253,9 +257,9 @@ export default class Chat extends Component {
           recordingDuration: status.durationMillis,
         },
       });
-      if (!this.state.audioState.isLoading) {
-        this._stopRecordingAndEnablePlayback();
-      }
+      // if (!this.state.audioState.isLoading) {
+      //   this._stopRecordingAndEnablePlayback();
+      // }
     }
   };
 
@@ -306,6 +310,74 @@ export default class Chat extends Component {
     }
     const info = await FileSystem.getInfoAsync(this.recording.getURI());
     console.log(`FILE INFO: ${JSON.stringify(info)}`);
+
+    const source = {
+      size: info.size,
+      uri: info.uri,
+      resource_type: 'video',
+      type: 'audio/aac',
+    };
+
+    var formdata = new FormData();
+
+    formdata.append(
+      'file',
+      ` data:audio/mpeg;base64,${base64.encode(info.uri)}`
+    );
+    formdata.append('cloud_name', 'https-cyberve-com');
+    formdata.append('upload_preset', 'kvdcspfl');
+    formdata.append('resource_type', 'video');
+
+    RNFetchBlob.fetch(
+      'POST',
+      'http://www.example.com/images/img1.png',
+      {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, GET, PUT, OPTIONS, DELETE',
+        'Access-Control-Allow-Headers':
+          'Access-Control-Allow-Methods, Access-Control-Allow-Origin, Origin, Accept, Content-Type',
+        Accept: 'application/x-www-form-urlencoded',
+        'Content-Type': 'application/json',
+      },
+      JSON.stringify(formdata)
+    )
+      .then((res) => {
+        let status = res.info().status;
+
+        if (status == 200) {
+          // the conversion is done in native code
+          let base64Str = res.base64();
+          // the following conversions are done in js, it's SYNC
+          let text = res.text();
+          let json = res.json();
+          console.log(json);
+        } else {
+          // handle other status codes
+        }
+      })
+      // Something went wrong:
+      .catch((errorMessage, statusCode) => {
+        console.log(errorMessage);
+      });
+    // axios({
+    //   url: 'http://api.cloudinary.com/v1_1/https-cyberve-com/auto/upload',
+    //   method: 'POST',
+    //   headers: {
+    //     'Access-Control-Allow-Origin': '*',
+    //     'Access-Control-Allow-Methods': 'POST, GET, PUT, OPTIONS, DELETE',
+    //     'Access-Control-Allow-Headers':
+    //       'Access-Control-Allow-Methods, Access-Control-Allow-Origin, Origin, Accept, Content-Type',
+    //     Accept: 'application/x-www-form-urlencoded',
+    //     'Content-Type': 'application/x-www-form-urlencoded',
+    //   },
+    //   data: formdata,
+    // })
+    //   .then(async (res) => {
+    //     console.log(res);
+    //     let json = await res.json();
+    //     console.log(JSON.stringify(res));
+    //   })
+    //   .catch((err) => console.log('error', err));
     await Audio.setAudioModeAsync({
       allowsRecordingIOS: false,
       interruptionModeIOS: Audio.INTERRUPTION_MODE_IOS_DO_NOT_MIX,
@@ -517,6 +589,8 @@ export default class Chat extends Component {
         let dataUrl = await res.json();
         console.log(dataUrl.url);
         this.setState({ image: data.Url.url });
+
+        console.log('state', this.state.image);
         this.handleSaveData(dataUrl.url);
         this.hideLoadingDialogue();
       })
@@ -615,16 +689,29 @@ export default class Chat extends Component {
   };
 
   handleSaveData = (data) => {
-    // console.log('base64Data:', data);
     this.setState({
       message: [...this.state.message, data],
+    });
+  };
+
+  handleImageView = () => {
+    return this.setState({
+      showAlert: true,
+      showSuccessAlert: false,
+      profilePic: this.state.image,
     });
   };
 
   _renderPicture = () => {
     this.state.image !== '' ? (
       <View>
-        <Image source={this.state.image} />
+        <TouchableOpacity
+          style={{ width: 40, height: 40, borderRadius: 5 }}
+          onPress={() => handleImageView()}
+        >
+          {' '}
+          <Image source={{ uri: this.state.image }} />
+        </TouchableOpacity>
       </View>
     ) : null;
   };
@@ -867,6 +954,7 @@ export default class Chat extends Component {
   handleCloseNotification = () => {
     return this.setState({
       showAlert: false,
+      showSuccessAlert: false,
     });
   };
 
@@ -1013,6 +1101,16 @@ export default class Chat extends Component {
                   </Text>
                 </View>
               </View>
+              {this.state.image !== '' ? (
+                <View>
+                  <TouchableOpacity
+                    style={{ width: 40, height: 40, borderRadius: 5 }}
+                    onPress={() => handleImageView()}
+                  >
+                    <Image source={{ uri: this.state.image }} />
+                  </TouchableOpacity>
+                </View>
+              ) : null}
             </ScrollView>
             {/* <InputBar onSendPressed={() => this._sendMessage()}
           onSizeChange={() => this._onInputSizeChange()}
@@ -1033,7 +1131,11 @@ export default class Chat extends Component {
                 disabled={this.state.audioState.isLoading}
               >
                 <Image
-                  source={require('../../assets/images/microphone-button.png')}
+                  source={
+                    this.state.audioState.isRecording
+                      ? require('../../assets/images/microphone-red-button.png')
+                      : require('../../assets/images/microphone-black-button.png')
+                  }
                   style={styles.micIcon}
                 />
               </TouchableOpacity>
@@ -1055,6 +1157,12 @@ export default class Chat extends Component {
           visible={showLoading}
           title='Processing'
           message='Please wait...'
+        />
+
+        <ProfileImage
+          image={this.state.image}
+          handleCloseNotification={this.handleCloseNotification}
+          visible={this.state.showAlert}
         />
       </SafeAreaView>
     );
@@ -1134,9 +1242,6 @@ const playerStyle = StyleSheet.create({
     alignSelf: 'stretch',
   },
 
-  recordingTimestamp: {
-    paddingLeft: 20,
-  },
   playbackTimestamp: {
     textAlign: 'right',
     alignSelf: 'stretch',
