@@ -66,7 +66,6 @@ let styles = StyleSheet.create({
 
   activeText: {
     color: colors.green,
-    fontWeight: 'bold',
   },
 
   textView: {
