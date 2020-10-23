@@ -14,16 +14,16 @@ const elevation = {
 export default styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background_color
+    backgroundColor: colors.background_color,
   },
 
   menuIcon: {
     width: 20,
     height: 20,
-    tintColor: colors.white
+    tintColor: colors.white,
   },
   wrapper: {
-    flex: 1
+    flex: 1,
     // alignItems: 'center'
   },
   searchView: {
@@ -32,12 +32,12 @@ export default styles = StyleSheet.create({
     flexDirection: 'row',
     paddingLeft: 8,
     paddingTop: Platform.OS === 'ios' ? 8 : StatusBar.currentHeight,
-    marginBottom: 16
+    marginBottom: 16,
   },
   searchIcon: {
     width: 20,
     height: 20,
-    tintColor: theme.textGray
+    tintColor: theme.textGray,
   },
   btnView: {
     width: '100%',
@@ -56,7 +56,7 @@ export default styles = StyleSheet.create({
   },
   listView2: {
     flex: 1,
-    paddingBottom: 90
+    paddingBottom: 90,
   },
   btnStyle: {
     backgroundColor: colors.yellow,
@@ -73,14 +73,14 @@ export default styles = StyleSheet.create({
     shadowRadius: 2.56,
     shadowOffset: { height: 2, width: 2 },
     position: 'relative',
-    bottom: 20
+    bottom: 20,
   },
   btnText: {
-    fontSize: 40,
+    fontSize: Platform.OS === 'ios' ? 30 : 40,
     color: colors.white,
     fontFamily: theme.headerFont,
     position: 'relative',
-    bottom: 4
+    bottom: 4,
   },
   flatlistView: {
     flex: 1,
@@ -89,7 +89,7 @@ export default styles = StyleSheet.create({
   categoryHeader: {
     width: '100%',
     paddingLeft: 16,
-    paddingVertical: 4
+    paddingVertical: 4,
     // alignItems: 'center'
   },
   otherCategoryHeader: {
@@ -97,17 +97,17 @@ export default styles = StyleSheet.create({
     paddingLeft: 16,
     paddingRight: 8,
     paddingVertical: 4,
-    marginTop: 20
+    marginTop: 20,
   },
   groupText: {
-    fontSize: 25,
+    fontSize: 18,
     color: theme.darkText,
-    fontFamily: theme.headerFont
+    fontFamily: theme.headerFont,
   },
   groupSubText: {
-    fontSize: theme.MediumFont,
+    fontSize: theme.SmallerFont,
     color: colors.darkGrayTxt,
-    fontFamily: theme.LightFont
+    fontFamily: theme.LightFont,
   },
   renderRowView: {
     margin: 4,
@@ -115,7 +115,7 @@ export default styles = StyleSheet.create({
     borderRadius: theme.btnRadius,
     marginTop: 20,
     width: 200,
-    height: 200
+    height: 200,
   },
   flatlistGroup: {
     width: '100%',
@@ -126,14 +126,14 @@ export default styles = StyleSheet.create({
     shadowOffset: { height: 2, width: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 2.25,
-    borderRadius: theme.btnRadius
+    borderRadius: theme.btnRadius,
   },
   itemImage: {
-    width: 200
+    width: 200,
   },
   faceImage: {
     width: '100%',
-    height: 130
+    height: 130,
     // resizeMode: 'contain'
   },
   itemDetails: {
@@ -141,7 +141,7 @@ export default styles = StyleSheet.create({
     height: 70,
     borderBottomLeftRadius: theme.btnRadius,
     borderBottomRightRadius: theme.btnRadius,
-    backgroundColor: colors.whiteShade
+    backgroundColor: colors.whiteShade,
   },
   titleText: {
     fontFamily: theme.headerFont,
@@ -150,7 +150,7 @@ export default styles = StyleSheet.create({
     shadowColor: colors.darkGray,
     shadowOffset: { height: 2, width: 2 },
     shadowOpacity: 0.3,
-    shadowRadius: 2.56
+    shadowRadius: 2.56,
   },
   itemType: {
     fontFamily: theme.LightFont,
@@ -159,7 +159,7 @@ export default styles = StyleSheet.create({
     shadowColor: colors.darkGray,
     shadowOffset: { height: 2, width: 2 },
     shadowOpacity: 0.3,
-    shadowRadius: 2.56
+    shadowRadius: 2.56,
   },
   flatListView: {
     marginHorizontal: 4,
@@ -173,18 +173,18 @@ export default styles = StyleSheet.create({
     shadowOffset: { height: 4, width: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 2.56,
-    backgroundColor: theme.colorAccent
+    backgroundColor: theme.colorAccent,
   },
   itemType: {
     fontSize: theme.thinyFont,
     fontFamily: theme.LightFont,
-    color: theme.primaryColor
+    color: theme.primaryColor,
   },
   // Modal
   modal: {
     flex: 1,
     width: '100%',
-    padding: 2
+    padding: 2,
   },
   customStyle: {
     paddingLeft: 20,
@@ -193,38 +193,38 @@ export default styles = StyleSheet.create({
     backgroundColor: 'transparent',
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   joinGropView: {
     width: '90%',
     height: '60%',
     backgroundColor: theme.colorAccent,
     borderRadius: 4,
-    overflow: 'hidden'
+    overflow: 'hidden',
   },
   imageView: {
     width: '100%',
     height: '40%',
-    overflow: 'hidden'
+    overflow: 'hidden',
   },
   joinView: {
     width: '100%',
     height: '60%',
-    padding: 16
+    padding: 16,
   },
   modalImage: {
     width: '100%',
     height: '100%',
-    resizeMode: 'cover'
+    resizeMode: 'cover',
   },
   groupDetailView: {
     flexDirection: 'row',
     paddingVertical: 4,
     justifyContent: 'space-between',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   groupName: {
-    width: '80%'
+    width: '80%',
   },
   groupInterest: {
     // width: '20%',
@@ -235,22 +235,22 @@ export default styles = StyleSheet.create({
     alignItems: 'center',
     overflow: 'hidden',
     flexDirection: 'row',
-    paddingHorizontal: 8
+    paddingHorizontal: 8,
   },
   groupDescription: {
     width: '80%',
-    marginTop: 8
+    marginTop: 8,
   },
   descHeader: {
     fontSize: 18,
     color: theme.darkText,
-    fontFamily: theme.headerFont
+    fontFamily: theme.headerFont,
   },
   description: {
     fontSize: theme.thinyFont,
     color: colors.darkGrayTxt,
     fontFamily: theme.LightFont,
-    marginLeft: 2
+    marginLeft: 2,
   },
   buttonsView: {
     flexDirection: 'row',
@@ -262,7 +262,7 @@ export default styles = StyleSheet.create({
     alignItems: 'flex-end',
     marginTop: 20,
     position: 'absolute',
-    bottom: 0
+    bottom: 0,
   },
   cancelBtn: {
     width: '30%',
@@ -270,25 +270,25 @@ export default styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
-    alignSelf: 'center'
+    alignSelf: 'center',
   },
   cancelTxt: {
     fontFamily: theme.LightFont,
     color: theme.darkGrayTxt,
     fontSize: theme.LargeFont,
-    alignSelf: 'center'
+    alignSelf: 'center',
   },
   interestIcon: {
     width: 14,
     height: 14,
     tintColor: theme.colorAccent,
-    resizeMode: 'contain'
+    resizeMode: 'contain',
   },
   interestText: {
     fontFamily: theme.headerFont,
     color: theme.whiteShade,
     fontSize: theme.SmallFont,
-    alignSelf: 'center'
+    alignSelf: 'center',
   },
   joinBtn: {
     width: '40%',
@@ -303,13 +303,13 @@ export default styles = StyleSheet.create({
     shadowOffset: { height: 4, width: 0 },
     shadowOpacity: 0.25,
     shadowRadius: 2.25,
-    borderRadius: 30
+    borderRadius: 30,
   },
   joinTxt: {
     fontFamily: theme.LightFont,
     color: theme.whiteShade,
     fontSize: theme.LargeFont,
-    alignSelf: 'center'
+    alignSelf: 'center',
   },
   // headerMessageView: {
   //   paddingLeft: 16,
@@ -334,8 +334,7 @@ export default styles = StyleSheet.create({
     paddingLeft: 8,
     alignItems: 'center',
     borderRadius: 20,
-    marginLeft: 14
-
+    marginLeft: 14,
   },
   emptyView: {
     width: '100%',
@@ -345,5 +344,5 @@ export default styles = StyleSheet.create({
     borderRadius: 8,
     overflow: 'hidden',
     padding: 3,
-  }
+  },
 });
