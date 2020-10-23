@@ -159,7 +159,7 @@ const slides = [
     backgroundColor: '#FFFFFF',
     image: require('../../assets/images/boarding2.png'),
     key: 's2',
-    title: 'Balance Your Social and\n Educational Life',
+    title: 'Balance Your Social \n& Educational Life',
     text:
       'Keep in touch with your social life \n without compromising your education',
   },
