@@ -9,11 +9,16 @@ import {
   TouchableOpacity,
   ScrollView,
   FlatList,
-  RefreshControl
+  RefreshControl,
 } from 'react-native';
 import SvgAnimatedLinearGradient from 'react-native-svg-animated-linear-gradient';
 import Svg, { Circle, Rect } from 'react-native-svg';
-import { ErrorAlert, CustomModal, SuccessAlert, InputField } from '../../components';
+import {
+  ErrorAlert,
+  CustomModal,
+  SuccessAlert,
+  InputField,
+} from '../../components';
 import moment from 'moment';
 import { useNavigation } from 'react-navigation-hooks';
 import { SubmitButton, DisplayText } from '../../components';
@@ -36,7 +41,7 @@ function Groups({ navigation }) {
     [showAlert, setShowAlert] = useState({
       showAlert: false,
       showSuccessAlert: false,
-      message: ''
+      message: '',
     }),
     [yourGroupData, setYourGroupData] = useState([]),
     [groupData, setGroupData] = useState([]),
@@ -54,40 +59,39 @@ function Groups({ navigation }) {
       description: '',
       interest: '',
       groupId: '',
-      members: 0
+      members: 0,
     }),
     [searchText, setSearchText] = useState('');
 
   useEffect(() => {
     checkToken();
   }, []);
-  useEffect(() => {
-  }, [otherGroupData]);
+  useEffect(() => {}, [otherGroupData]);
 
   const checkToken = async () => {
-    let profile = await getProfile()
-    let userDetails = await getUserDetails()
-    console.log('user iiddddd', userDetails)
+    let profile = await getProfile();
+    let userDetails = await getUserDetails();
+    console.log('user iiddddd', userDetails);
     if (userDetails !== 'undefined') {
-      let userId = userDetails.data.id
-      let schoolID = userDetails.data.school
-      let access_token = profile.access_token
-      setToken(access_token)
-      setUserId(userId)
-      setSchoolID(schoolID)
-      return handleGetAllRequest(access_token, schoolID)
+      let userId = userDetails.data.id;
+      let schoolID = userDetails.data.school;
+      let access_token = profile.access_token;
+      setToken(access_token);
+      setUserId(userId);
+      setSchoolID(schoolID);
+      return handleGetAllRequest(access_token, schoolID);
     }
   };
 
   const _onRefresh = async () => {
-    let profile = await getProfile()
-    let token = profile.access_token
-    let schoolID = schId
-    setRefresh(true)
+    let profile = await getProfile();
+    let token = profile.access_token;
+    let schoolID = schId;
+    setRefresh(true);
     handleGetAllRequest(token, schoolID).then(() => {
-      setRefresh(false)
+      setRefresh(false);
     });
-  }
+  };
 
   const openYourGroup = () => {
     return navigate('GroupDetail');
@@ -104,7 +108,7 @@ function Groups({ navigation }) {
     let header = {
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `${token}`
+        Authorization: `${token}`,
       },
     };
     let endpoint = `${GetGroupByID}${schoolID}`;
@@ -112,8 +116,8 @@ function Groups({ navigation }) {
     const latestGroup = fetch(endpoint, header);
     const createdGroup = fetch(endpoint, header);
     Promise.all([yourGroup, latestGroup, createdGroup])
-      .then(value => Promise.all(value.map(value => value.json())))
-      .then(finalResps => {
+      .then((value) => Promise.all(value.map((value) => value.json())))
+      .then((finalResps) => {
         const groupAPIResp = finalResps[0],
           yourGroupAPIResp = finalResps[1],
           createdGroupApiResp = finalResps[2];
@@ -122,12 +126,12 @@ function Groups({ navigation }) {
         getYourGroup(yourGroupAPIResp);
         getCreatedGroups(createdGroupApiResp);
       })
-      .catch(error => {
+      .catch((error) => {
         hideLoadingDialogue();
       });
   };
 
-  const getLatestGroups = async groupRes => {
+  const getLatestGroups = async (groupRes) => {
     try {
       if (groupRes) {
         hideLoadingDialogue();
@@ -144,16 +148,16 @@ function Groups({ navigation }) {
     }
   };
 
-  const getYourGroup = async yourGroupRes => {
+  const getYourGroup = async (yourGroupRes) => {
     try {
       if (yourGroupRes) {
         const yourGroupToArray = Object.values(yourGroupRes.data);
         let groupByMember = yourGroupToArray.filter((item) => {
           if (item.isMember && item.isMember === true) {
-            return true
+            return true;
           }
           return false;
-        })
+        });
         setYourGroupData(groupByMember);
         return hideLoadingDialogue();
       } else {
@@ -165,7 +169,7 @@ function Groups({ navigation }) {
     }
   };
 
-  const getCreatedGroups = async createdGroupRes => {
+  const getCreatedGroups = async (createdGroupRes) => {
     try {
       if (createdGroupRes) {
         // const createdGroupToArray = Object.values(createdGroupRes);
@@ -174,7 +178,7 @@ function Groups({ navigation }) {
             return true;
           }
           return false;
-        })
+        });
         setCreatedGroupData(data);
         // let data = createdGroupToArray.filter((item) => {
         //   let createdGroup = item.members.findIndex((index) => {
@@ -205,44 +209,40 @@ function Groups({ navigation }) {
         date: item.createdAt,
         description: item.description,
         groupId: item.id,
-        members: memberLength
+        members: memberLength,
         // interest: item.interest
-      })
-      navigation.navigate('GroupDetail', {
-        groupId: item.id
       });
-
-    }
-    else {
+      navigation.navigate('GroupDetail', {
+        groupId: item.id,
+      });
+    } else {
       setShowCustomModal(!customModal);
       return setGroupName({
         groupName: item.name,
         date: item.createdAt,
         description: item.description,
         groupId: item.id,
-        members: memberLength
+        members: memberLength,
 
         // interest: item.interest
-      })
+      });
     }
-
   };
   const handleCloseModal = () => {
     setShowCustomModal(false);
     return setShowAlert({
-      showAlert: false
+      showAlert: false,
     });
   };
   const closeCustomModal = () => {
     return setShowCustomModal(false);
   };
 
-
   const handleCloseNotification = () => {
     setShowCustomModal(false);
     return setShowAlert({
       showAlert: false,
-      showSuccessAlert: false
+      showSuccessAlert: false,
     });
   };
   const handleJoinGroup = async (id) => {
@@ -251,20 +251,18 @@ function Groups({ navigation }) {
       await joinGroup(id);
     } catch (error) {
       hideLoadingDialogue();
-
     }
   };
 
-  const joinGroup = async id => {
+  const joinGroup = async (id) => {
     showLoadingDialogue();
     const settings = {
       method: 'POST',
       headers: {
         // Accept: 'application/json',
         'Content-Type': 'application/json',
-        Authorization: token
+        Authorization: token,
       },
-
     };
     let endpoint = `${JoinGroup}${id}${'/join'}`;
     const response = await fetch(endpoint, settings);
@@ -274,20 +272,20 @@ function Groups({ navigation }) {
       hideLoadingDialogue();
       setShowAlert({
         showAlert: true,
-        message: res.meta.message.toString()
+        message: res.meta.message.toString(),
       });
     } else if (res.meta.status == 200 || res.meta.status < 300) {
       hideLoadingDialogue();
       closeCustomModal();
       return navigation.navigate('GroupDetail', {
-        groupId: id
+        groupId: id,
       });
     } else {
       if (res.meta.message) {
         hideLoadingDialogue();
         setShowAlert({
           showAlert: true,
-          message: res.meta.message.toString()
+          message: res.meta.message.toString(),
         });
       }
     }
@@ -301,15 +299,16 @@ function Groups({ navigation }) {
           <Rect x='0' y='0' rx='5' ry='5' width='100%' height='100%' />
         </SvgAnimatedLinearGradient>
       </View>
-    )
-  }
+    );
+  };
   const renderRow = ({ item }) => {
     return (
       <View style={styles.renderRowView}>
         <View style={styles.flatlistGroup}>
           <TouchableOpacity
             onPress={() => showCustomeModal(item)}
-            style={styles.itemImage}>
+            style={styles.itemImage}
+          >
             <Image
               onPress={() => showCustomeModal(item)}
               style={styles.faceImage}
@@ -343,7 +342,8 @@ function Groups({ navigation }) {
         <View style={styles.flatlistGroup}>
           <TouchableOpacity
             onPress={() => showCustomeModal(item)}
-            style={styles.itemImage}>
+            style={styles.itemImage}
+          >
             <Image
               onPress={() => showCustomeModal(item)}
               style={styles.faceImage}
@@ -376,7 +376,8 @@ function Groups({ navigation }) {
       <View style={styles.flatListView}>
         <TouchableOpacity
           onPress={() => showCustomeModal(item)}
-          style={styles.itemImage}>
+          style={styles.itemImage}
+        >
           <Image
             onPress={() => showCustomeModal(item)}
             style={styles.faceImage}
@@ -385,7 +386,8 @@ function Groups({ navigation }) {
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => showCustomeModal(item)}
-          style={styles.itemDetails}>
+          style={styles.itemDetails}
+        >
           <DisplayText
             text={item.name}
             onPress={() => showCustomeModal(item)}
@@ -403,25 +405,24 @@ function Groups({ navigation }) {
       </View>
     );
   };
-  // search filter 
+  // search filter
 
-  const searchFilterFunction = text => {
+  const searchFilterFunction = (text) => {
     console.log('other group data', otherGroupData);
-    setSearchText(text)
-    const newData = otherGroupData.filter(item => {
+    setSearchText(text);
+    const newData = otherGroupData.filter((item) => {
       const itemData = `${item.name.toUpperCase()} ${item.description.toUpperCase()}`;
       const textData = text.toUpperCase();
       console.log('text...', itemData);
       return itemData.indexOf(textData) > -1;
-    }
-    );
+    });
     setGroupData(newData);
-  }
+  };
 
   const handleCreateButton = () => {
     return navigate('CreateGroup');
   };
-  // search filter 
+  // search filter
 
   return (
     <SafeAreaView style={styles.container}>
@@ -435,7 +436,6 @@ function Groups({ navigation }) {
           />
         </TouchableOpacity>
         <View style={styles.search}>
-
           <InputField
             placeholder={'Search Group'}
             placeholderTextColor={theme.secondaryTextColor}
@@ -449,20 +449,16 @@ function Groups({ navigation }) {
             borderBottomWidth={0}
             paddingLeft={8}
           />
-
         </View>
       </View>
       <View style={styles.wrapper}>
         <ScrollView
           refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={_onRefresh}
-            />
+            <RefreshControl refreshing={refreshing} onRefresh={_onRefresh} />
           }
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 8 }}>
-
+          contentContainerStyle={{ paddingBottom: 8 }}
+        >
           <View style={styles.listView}>
             <View style={styles.categoryHeader}>
               <DisplayText
@@ -477,12 +473,11 @@ function Groups({ navigation }) {
             <FlatList
               data={yourGroupData}
               renderItem={renderRow}
-              keyExtractor={data => data.id}
+              keyExtractor={(data) => data.id}
               showsHorizontalScrollIndicator={false}
               horizontal={true}
               contentContainerStyle={{ paddingLeft: 16 }}
               ListEmptyComponent={renderEmpty}
-
             />
           </View>
 
@@ -501,7 +496,7 @@ function Groups({ navigation }) {
               <FlatList
                 data={createdGroupData}
                 renderItem={renderCreatedGroup}
-                keyExtractor={data => data.id}
+                keyExtractor={(data) => data.id}
                 showsHorizontalScrollIndicator={false}
                 horizontal={true}
                 ListEmptyComponent={renderEmpty}
@@ -525,7 +520,7 @@ function Groups({ navigation }) {
               <FlatList
                 data={groupData}
                 renderItem={renderOtherGroups}
-                keyExtractor={data => data.id}
+                keyExtractor={(data) => data.id}
                 showsVerticalScrollIndicator={false}
                 horizontal={false}
                 numColumns={2}
@@ -569,10 +564,13 @@ function Groups({ navigation }) {
                   <DisplayText
                     styles={StyleSheet.flatten(styles.groupText)}
                     text={groupDetails.groupName}
+                    numberOfLines={1}
                   />
                   <DisplayText
                     styles={StyleSheet.flatten(styles.groupSubText)}
-                    text={`${'Created On'} ${moment(groupDetails.date).format('MMMM Do YYYY')}`}
+                    text={`${'Created On'} ${moment(groupDetails.date).format(
+                      'MMMM Do YYYY'
+                    )}`}
                   />
                 </View>
 
@@ -644,6 +642,6 @@ function Groups({ navigation }) {
       />
     </SafeAreaView>
   );
-};
+}
 
 export default Groups;
