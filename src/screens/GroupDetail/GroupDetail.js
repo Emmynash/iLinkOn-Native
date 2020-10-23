@@ -21,6 +21,7 @@ import {
   FlatList,
   Text,
   KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import {
   GetGroupMember,
@@ -319,7 +320,11 @@ class GroupDetail extends Component {
                   onPress={() => this.handleEventDetails(item)}
                 />
                 <DisplayText
-                  styles={styles.divideOneTxt}
+                  styles={
+                    Constants.platform.ios
+                      ? { width: '65%', marginLeft: 5, fontSize: '10px' }
+                      : styles.divideOneTxt
+                  }
                   onPress={() => this.handleEventDetails(item)}
                   text={`Posted: ${moment(item.createdAt).format('Do MMM YY')}`}
                 />
@@ -524,6 +529,7 @@ class GroupDetail extends Component {
                 text={groupName}
                 numberOfLines={2}
                 styles={StyleSheet.flatten(styles.userProfileText)}
+                numberOfLines={2}
               />
               <DisplayText
                 onPress={this.handleEditProfile}
