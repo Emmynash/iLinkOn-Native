@@ -28,6 +28,7 @@
     "react-native": "https://github.com/expo/react-native/archive/sdk-36.0.0.tar.gz",
     "react-native-app-intro-slider": "^3.0.0",
     "react-native-audio": "^4.3.0",
+    "react-native-audio-transcoder": "^0.3.0",
     "react-native-autogrow-input": "^0.2.1",
     "react-native-axios": "^0.17.1",
     "react-native-base64": "^0.1.0",
