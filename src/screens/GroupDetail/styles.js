@@ -65,6 +65,9 @@ let styles = StyleSheet.create({
   },
 
   activeText: {
+    fontSize: Platform.OS === 'ios' ? 8 : 10,
+    marginLeft: Platform.OS === 'ios' ? -20 : -8,
+    fontWeight: 'bold',
     color: colors.green,
   },
 
@@ -123,7 +126,7 @@ let styles = StyleSheet.create({
   },
   userProfileText: {
     fontFamily: theme.headerFont,
-    fontSize: theme.LargeFont,
+    fontSize: 16,
     color: '#00000099',
   },
   editProText: {
@@ -221,12 +224,12 @@ let styles = StyleSheet.create({
   },
   cardImgTxt: {
     color: colors.white,
-    fontSize: 23,
+    fontSize: Platform.OS === 'ios' ? 16 : 23,
     fontFamily: theme.headerFont,
   },
   timeTxt: {
     color: colors.white,
-    fontSize: 23,
+    fontSize: Platform.OS === 'ios' ? 16 : 23,
     fontFamily: theme.LightFont,
   },
   holder: {
@@ -491,7 +494,7 @@ let styles = StyleSheet.create({
   joinTxt: {
     fontFamily: theme.headerFont,
     color: theme.colorAccent,
-    fontSize: 40,
+    fontSize: Platform.OS === 'ios' ? 30 : 40,
     alignSelf: 'center',
   },
   modalContainer: {
