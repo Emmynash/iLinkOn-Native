@@ -46,7 +46,8 @@ import {
 import moment from 'moment';
 import axios from 'react-native-axios';
 import { Asset } from 'expo-asset';
-import RNFetchBlob from 'rn-fetch-blob';
+// import RNFetchBlob from 'rn-fetch-blob';
+import { transcode } from 'react-native-audio-transcoder';
 
 const { State: TextInputState } = TextInput;
 
@@ -80,7 +81,7 @@ const ICON_THUMB_1 = new Icon(
   19
 );
 const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = Dimensions.get('window');
-const BACKGROUND_COLOR = '#FFF8ED';
+const BACKGROUND_COLOR = '#FFF';
 
 export default class Chat extends Component {
   constructor(props) {
@@ -232,14 +233,14 @@ export default class Chat extends Component {
   _checkAudioPermission = async () => {
     const response = await Permissions.askAsync(Permissions.AUDIO_RECORDING);
     if (response.status === 'granted') {
+      console.log(response.status);
       this.setState({
         audioState: { haveRecordingPermissions: response.status === 'granted' },
       });
-
       return this._handleAudio();
+    } else {
+      return false;
     }
-
-    return false;
   };
 
   _updateScreenForRecordingStatus = (status) => {
@@ -312,72 +313,34 @@ export default class Chat extends Component {
     console.log(`FILE INFO: ${JSON.stringify(info)}`);
 
     const source = {
+      name: info.uri.split('-')[5],
       size: info.size,
       uri: info.uri,
-      resource_type: 'video',
-      type: 'audio/aac',
+      type: 'audio/mpeg',
     };
 
     var formdata = new FormData();
 
-    formdata.append(
-      'file',
-      ` data:audio/mpeg;base64,${base64.encode(info.uri)}`
-    );
+    formdata.append('file', source);
     formdata.append('cloud_name', 'https-cyberve-com');
     formdata.append('upload_preset', 'kvdcspfl');
     formdata.append('resource_type', 'video');
 
-    RNFetchBlob.fetch(
-      'POST',
-      'http://www.example.com/images/img1.png',
-      {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, GET, PUT, OPTIONS, DELETE',
-        'Access-Control-Allow-Headers':
-          'Access-Control-Allow-Methods, Access-Control-Allow-Origin, Origin, Accept, Content-Type',
-        Accept: 'application/x-www-form-urlencoded',
-        'Content-Type': 'application/json',
+    fetch('http://api.cloudinary.com/v1_1/https-cyberve-com/auto/upload', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'multipart/form-data',
       },
-      JSON.stringify(formdata)
-    )
-      .then((res) => {
-        let status = res.info().status;
-
-        if (status == 200) {
-          // the conversion is done in native code
-          let base64Str = res.base64();
-          // the following conversions are done in js, it's SYNC
-          let text = res.text();
-          let json = res.json();
-          console.log(json);
-        } else {
-          // handle other status codes
-        }
+      body: formdata,
+    })
+      .then(async (res) => {
+        // console.log(res);
+        let json = await res.json();
+        console.log(JSON.stringify(json.secure_url));
       })
-      // Something went wrong:
-      .catch((errorMessage, statusCode) => {
-        console.log(errorMessage);
-      });
-    // axios({
-    //   url: 'http://api.cloudinary.com/v1_1/https-cyberve-com/auto/upload',
-    //   method: 'POST',
-    //   headers: {
-    //     'Access-Control-Allow-Origin': '*',
-    //     'Access-Control-Allow-Methods': 'POST, GET, PUT, OPTIONS, DELETE',
-    //     'Access-Control-Allow-Headers':
-    //       'Access-Control-Allow-Methods, Access-Control-Allow-Origin, Origin, Accept, Content-Type',
-    //     Accept: 'application/x-www-form-urlencoded',
-    //     'Content-Type': 'application/x-www-form-urlencoded',
-    //   },
-    //   data: formdata,
-    // })
-    //   .then(async (res) => {
-    //     console.log(res);
-    //     let json = await res.json();
-    //     console.log(JSON.stringify(res));
-    //   })
-    //   .catch((err) => console.log('error', err));
+      .catch((err) => console.log('error', err));
+
     await Audio.setAudioModeAsync({
       allowsRecordingIOS: false,
       interruptionModeIOS: Audio.INTERRUPTION_MODE_IOS_DO_NOT_MIX,
@@ -409,7 +372,16 @@ export default class Chat extends Component {
     if (this.state.audioState.isRecording) {
       this._stopRecordingAndEnablePlayback();
     } else {
-      this._stopPlaybackAndBeginRecording();
+      const response = await Permissions.askAsync(Permissions.AUDIO_RECORDING);
+      if (response.status === 'granted') {
+        console.log(response.status);
+        this.setState({
+          audioState: {
+            haveRecordingPermissions: response.status === 'granted',
+          },
+        });
+        return this._stopPlaybackAndBeginRecording();
+      }
     }
   };
 
@@ -573,9 +545,7 @@ export default class Chat extends Component {
   };
 
   handleAddPicture = (base64Img) => {
-    let CLOUDINARY_URL =
-      'https://api.cloudinary.com/v1_1/https-cyberve-com/image/upload';
-    fetch(CLOUDINARY_URL, {
+    fetch('https://api.cloudinary.com/v1_1/https-cyberve-com/image/upload', {
       body: JSON.stringify({
         file: base64Img,
         upload_preset: 'kvdcspfl',
@@ -586,12 +556,12 @@ export default class Chat extends Component {
       method: 'POST',
     })
       .then(async (res) => {
-        let dataUrl = await res.json();
-        console.log(dataUrl.url);
-        this.setState({ image: data.Url.url });
+        const data = await res.json();
+        console.log(data);
+        this.setState({ image: data.url });
 
         console.log('state', this.state.image);
-        this.handleSaveData(dataUrl.url);
+        this.handleSaveData(data.url);
         this.hideLoadingDialogue();
       })
       .catch((err) => {
@@ -607,14 +577,14 @@ export default class Chat extends Component {
         console.log('permission not granted');
         return false;
       } else {
-        return this.pickDocument();
+        return this._pickDocument();
       }
     } else {
-      return this.pickDocument();
+      return this._pickDocument();
     }
   };
 
-  pickDocument = async () => {
+  _pickDocument = async () => {
     let result = await DocumentPicker.getDocumentAsync({
       copyToCacheDirectory: false,
     });
@@ -628,60 +598,26 @@ export default class Chat extends Component {
         type: 'application/pdf',
       };
       console.log('picked doc', source);
-      return this.handleDocument(source);
+      return this._handleDocument(source);
     }
   };
 
-  handleDocument = async (file) => {
-    // let CLOUDINARY_URL =
-    //   'https://api.cloudinary.com/https-cyberve-com/auto/upload/';
-    // fetch(CLOUDINARY_URL, {
-    //   headers: {
-    //     Accept: 'application/json, text/plain, */*',
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify({
-    //     file: file,
-    //     upload_preset: 'kvdcspfl',
-    //     api_key: '573257972757345',
-    //     api_secret: 'zPgSo2D5urNNqgt6hPEqvTkjfN8',
-    //     format: 'pdf',
-    //   }),
-    //   method: 'POST',
-    // })
-    //   .then(async (res) => {
-    //     let dataUrl = await res.json();
-    //     console.log('data', dataUrl);
-
-    //     // this.handleSaveData(dataUrl.url);
-    //     this.hideLoadingDialogue();
-    //   })
-    //   .catch((err) => {
-    //     this.hideLoadingDialogue();
-    //     console.log('Error occured:', err);
-    //   });
-
+  _handleDocument = async (file) => {
     var formdata = new FormData();
 
     formdata.append('file', file);
     formdata.append('cloud_name', 'https-cyberve-com');
     formdata.append('upload_preset', 'kvdcspfl');
 
-    axios({
-      url: 'http://api.cloudinary.com/v1_1/https-cyberve-com/auto/upload',
+    fetch('http://api.cloudinary.com/v1_1/https-cyberve-com/auto/upload', {
       method: 'POST',
       headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, GET, PUT, OPTIONS, DELETE',
-        'Access-Control-Allow-Headers':
-          'Access-Control-Allow-Methods, Access-Control-Allow-Origin, Origin, Accept, Content-Type',
-        Accept: 'application/x-www-form-urlencoded',
-        'Content-Type': 'application/x-www-form-urlencoded',
+        Accept: 'application/json',
+        'Content-Type': 'multipart/form-data',
       },
-      data: formdata,
+      body: formdata,
     })
       .then(async (res) => {
-        console.log(res);
         let json = await res.json();
         console.log(JSON.stringify(json.secure_url));
       })
@@ -707,7 +643,7 @@ export default class Chat extends Component {
       <View>
         <TouchableOpacity
           style={{ width: 40, height: 40, borderRadius: 5 }}
-          onPress={() => handleImageView()}
+          onPress={() => this.handleImageView()}
         >
           {' '}
           <Image source={{ uri: this.state.image }} />
@@ -959,7 +895,7 @@ export default class Chat extends Component {
   };
 
   render() {
-    const { showLoading, time, shift, messages, userid } = this.state;
+    const { showLoading, time, shift, messages, image } = this.state;
     var newMessages = [];
     messages.forEach(function (message, index) {
       newMessages.push(
@@ -967,6 +903,8 @@ export default class Chat extends Component {
           key={index}
           direction={message.direction}
           text={`${message.text} ${time}`}
+          // handleImageView={this.handleImageView}
+          image={image}
         />
       );
     });
@@ -1023,7 +961,44 @@ export default class Chat extends Component {
               style={styles.messagesBubble}
             >
               {newMessages}
-              {this._renderAudio()}
+              <View style={playerStyle.volumeContainer}>
+                <View style={playerStyle.playStopContainer}>
+                  <TouchableHighlight
+                    style={playerStyle.wrapper}
+                    onPress={this._onPlayPausePressed}
+                    // disabled={
+                    //   !this.state.isPlaybackAllowed ||
+                    //   this.state.audioState.isLoading
+                    // }
+                  >
+                    <Image
+                      style={playerStyle.image}
+                      source={
+                        this.state.audioState.isPlaying
+                          ? ICON_PAUSE_BUTTON.module
+                          : ICON_PLAY_BUTTON.module
+                      }
+                    />
+                  </TouchableHighlight>
+                </View>
+                <View style={playerStyle.playbackContainer}>
+                  <Slider
+                    style={playerStyle.playbackSlider}
+                    trackImage={ICON_TRACK_1.module}
+                    thumbImage={ICON_THUMB_1.module}
+                    value={this._getSeekSliderPosition()}
+                    onValueChange={this._onSeekSliderValueChange}
+                    onSlidingComplete={this._onSeekSliderSlidingComplete}
+                    disabled={
+                      !this.state.audioState.isPlaybackAllowed ||
+                      this.state.audioState.isLoading
+                    }
+                  />
+                  <Text style={[playerStyle.playbackTimestamp]}>
+                    {this._getPlaybackTimestamp()}
+                  </Text>
+                </View>
+              </View>
             </ScrollView>
             {/* <InputBar onSendPressed={() => this._sendMessage()}
             onSizeChange={() => this._onInputSizeChange()}
@@ -1037,6 +1012,20 @@ export default class Chat extends Component {
                 onChangeText={(text) => this._onChangeInputBarText(text)}
                 value={this.state.inputBarText}
               />
+              <TouchableOpacity
+                onPress={this._handleAudio}
+                disabled={this.state.audioState.isLoading}
+              >
+                <Image
+                  source={
+                    this.state.audioState.isRecording
+                      ? require('../../assets/images/microphone-red-button.png')
+                      : require('../../assets/images/microphone-black-button.png')
+                  }
+                  style={styles.micIcon}
+                />
+              </TouchableOpacity>
+
               <TouchableHighlight
                 style={styles.sendButton}
                 onPress={() => this._sendMessage()}
@@ -1101,16 +1090,16 @@ export default class Chat extends Component {
                   </Text>
                 </View>
               </View>
-              {this.state.image !== '' ? (
-                <View>
-                  <TouchableOpacity
-                    style={{ width: 40, height: 40, borderRadius: 5 }}
-                    onPress={() => handleImageView()}
-                  >
-                    <Image source={{ uri: this.state.image }} />
-                  </TouchableOpacity>
-                </View>
-              ) : null}
+              <View>
+                <TouchableOpacity onPress={() => this.handleImageView()}>
+                  <Image
+                    style={{ width: 200, height: 200, borderRadius: 5 }}
+                    source={{
+                      uri: this.state.image,
+                    }}
+                  />
+                </TouchableOpacity>
+              </View>
             </ScrollView>
             {/* <InputBar onSendPressed={() => this._sendMessage()}
           onSizeChange={() => this._onInputSizeChange()}
@@ -1189,21 +1178,35 @@ class MessageBubble extends Component {
         : styles.messageBubbleTextRight;
 
     return (
-      <View
-        style={{
-          justifyContent: 'space-between',
-          flexDirection: 'row',
-          marginBottom: 14,
-        }}
-      >
-        <StatusBar barStyle={'dark-content'} />
-
-        {leftSpacer}
-        <View style={bubbleStyles}>
-          <Text style={bubbleTextStyle}>{this.props.text}</Text>
+      <>
+        <View
+          style={{
+            justifyContent: 'space-between',
+            flexDirection: 'row',
+            marginBottom: 14,
+          }}
+        >
+          <StatusBar barStyle={'dark-content'} />
+          {leftSpacer}
+          <View style={bubbleStyles}>
+            <Text style={bubbleTextStyle}>{this.props.text}</Text>
+          </View>
+          {rightSpacer}
         </View>
-        {rightSpacer}
-      </View>
+        {/* <View
+          style={{
+            // justifyContent: 'space-between',
+            flexDirection: 'column',
+          }}
+        >
+          <TouchableOpacity onPress={() => this.props.handleImageView}>
+            <Image
+              style={{ width: 100, height: 100, borderRadius: 5 }}
+              source={{ uri: this.props.image }}
+            />
+          </TouchableOpacity>
+        </View> */}
+      </>
     );
   }
 }
