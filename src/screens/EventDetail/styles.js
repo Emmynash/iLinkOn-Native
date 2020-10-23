@@ -12,14 +12,13 @@ let styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingTop: Platform.OS === 'ios' ? 8 : StatusBar.currentHeight,
-    paddingHorizontal: 20
+    paddingHorizontal: 20,
   },
   backLogo: {
-    resizeMode: "contain",
+    resizeMode: 'contain',
     width: 20,
     height: 20,
   },
-
 
   badge: {
     height: 16,
@@ -36,7 +35,6 @@ let styles = StyleSheet.create({
     color: theme.colorAccent,
     fontFamily: theme.LightFont,
     fontSize: theme.thinyFont,
-
   },
   badgeGreen: {
     height: 16,
@@ -50,13 +48,13 @@ let styles = StyleSheet.create({
     alignItems: 'center',
   },
   leftView: {
-    paddingLeft: 10
+    paddingLeft: 10,
   },
   menu: {
-    resizeMode: "contain",
+    resizeMode: 'contain',
     width: 25,
     height: 25,
-    marginLeft: 20
+    marginLeft: 20,
   },
   flatListView: {
     marginHorizontal: 4,
@@ -64,7 +62,7 @@ let styles = StyleSheet.create({
     marginTop: 16,
     width: '90%',
     height: 150,
-    alignSelf: 'center'
+    alignSelf: 'center',
   },
   cardView: {
     flexDirection: 'row',
@@ -77,12 +75,12 @@ let styles = StyleSheet.create({
     shadowColor: '#00000066',
     shadowOffset: { height: 2, width: 2 },
     shadowOpacity: 0.25,
-    shadowRadius: 2.25
+    shadowRadius: 2.25,
   },
   div: {
     width: '40%',
     borderBottomLeftRadius: 10,
-    borderTopLeftRadius: 10
+    borderTopLeftRadius: 10,
   },
   divide: {
     width: '60%',
@@ -91,30 +89,30 @@ let styles = StyleSheet.create({
     // alignItems: 'center',
     justifyContent: 'center',
     right: 10,
-    position: 'relative'
+    position: 'relative',
   },
   divideTxt: {
     color: '#000000',
     fontFamily: theme.headerFont,
-    fontSize: 15
+    fontSize: 15,
     // paddingRight: 4
   },
   divideIcon: {
     width: 20,
     height: 20,
-    paddingRight: 5
+    paddingRight: 5,
   },
   divideOneTxt: {
     color: colors.darkGray,
     fontFamily: theme.LightFont,
     fontSize: theme.thinyFont,
     width: '100%',
-    marginLeft: 4
+    marginLeft: 4,
   },
   divideTxtView: {
     flexDirection: 'row',
     color: theme.lightTextGRay,
-    alignItems: 'center'
+    alignItems: 'center',
   },
   cardImgView: {
     // margin: 8,
@@ -131,17 +129,17 @@ let styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 2.25,
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   cardImgTxt: {
     color: colors.white,
-    fontSize: 23,
-    fontFamily: theme.headerFont
+    fontSize: Platform.OS === 'ios' ? 16 : 23,
+    fontFamily: theme.headerFont,
   },
   timeTxt: {
     color: colors.white,
-    fontSize: 23,
-    fontFamily: theme.LightFont
+    fontSize: Platform.OS === 'ios' ? 16 : 23,
+    fontFamily: theme.LightFont,
   },
   modalBtn: {
     width: '90%',
@@ -157,7 +155,7 @@ let styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 2.25,
     borderRadius: 25,
-    marginVertical: 4
+    marginVertical: 4,
   },
   modalTxt: {
     fontFamily: theme.headerFont,
@@ -168,18 +166,18 @@ let styles = StyleSheet.create({
     flexDirection: 'row',
     paddingVertical: 8,
     alignItems: 'center',
-    paddingHorizontal: 20
+    paddingHorizontal: 20,
   },
   descEvent: {
     fontFamily: theme.headerFont,
     color: theme.primaryColor,
     fontSize: theme.LargeFont,
-    marginLeft: 8
+    marginLeft: 8,
   },
   descImage: {
     width: 25,
     height: 25,
-    tintColor: colors.yellow
+    tintColor: colors.yellow,
   },
 
   descDetails: {
@@ -226,34 +224,33 @@ let styles = StyleSheet.create({
     fontFamily: theme.headerFont,
     color: theme.colorAccent,
     fontSize: 40,
-    alignSelf: 'center'
+    alignSelf: 'center',
   },
   msgImage: {
     width: 25,
     height: 25,
-    tintColor: theme.colorAccent
+    tintColor: theme.colorAccent,
   },
   imagesView: {
     flexDirection: 'row',
-    paddingVertical: 8
+    paddingVertical: 8,
   },
   circleView: {
     borderRadius: 50,
     width: 60,
     height: 60,
-    marginRight: 8
+    marginRight: 8,
   },
   noIimage: {
     borderRadius: 50,
     width: 60,
     height: 60,
     marginRight: 8,
-    tintColor: colors.gray
+    tintColor: colors.gray,
   },
   commentListView: {
     width: '95%',
     marginLeft: 10,
-
   },
   commentView: {
     borderRadius: 20,
@@ -262,19 +259,18 @@ let styles = StyleSheet.create({
     padding: 8,
     flexDirection: 'row',
     marginBottom: 16,
-    alignItems: 'center'
+    alignItems: 'center',
   },
   commentDetail: {
     width: '80%',
     flexDirection: 'column',
     paddingLeft: 5,
-    overflow: 'hidden'
+    overflow: 'hidden',
   },
   commentText: {
     fontSize: theme.SmallerFont,
     fontFamily: theme.LightFont,
     color: theme.primaryColor,
-
   },
   timeText: {
     fontSize: theme.SmallerFont,
@@ -288,7 +284,7 @@ let styles = StyleSheet.create({
   },
   modal: {
     flex: 1,
-    padding: 2
+    padding: 2,
   },
   modalContainer: {
     backgroundColor: 'transparent',
@@ -307,13 +303,12 @@ let styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 2.25,
     borderRadius: 30,
-
   },
   commentTxt: {
     fontFamily: theme.headerFont,
     color: theme.colorAccent,
     fontSize: 18,
-    alignSelf: 'center'
+    alignSelf: 'center',
   },
   buttonsView: {
     width: '100%',
@@ -332,7 +327,7 @@ let styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 20,
     paddingVertical: 20,
-    alignItems: 'center'
+    alignItems: 'center',
   },
   textInputView: {
     width: '100%',
@@ -343,7 +338,7 @@ let styles = StyleSheet.create({
   closeTxt: {
     fontFamily: theme.headerFont,
     fontSize: theme.SmallerFont,
-    color: colors.darkText
+    color: colors.darkText,
   },
   textBtny: {
     width: '90%',
@@ -357,14 +352,13 @@ let styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 8,
     alignSelf: 'center',
-    marginVertical: 8
+    marginVertical: 8,
   },
   commentTimeTxt: {
     fontFamily: theme.LightFont,
     fontSize: theme.SmallerFont,
-    color: colors.darkText
-  }
-
+    color: colors.darkText,
+  },
 });
 
 export default styles;
