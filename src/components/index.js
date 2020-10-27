@@ -13,7 +13,7 @@ import { Symbol } from './Symbol/Symbol';
 import { OtpInputs } from './OTPComponent';
 import { AuthBackground } from './AuthBackground';
 import { CustomToast } from './CustomToast';
-import { CustomModal } from './Modal';
+import { CustomModal, PDFModal, ImageModal } from './Modal';
 import { KeyboardAvoid } from './KeyboardAvoid';
 
 export {
@@ -33,4 +33,6 @@ export {
   CustomModal,
   KeyboardAvoid,
   ProfileImage,
+  PDFModal,
+  ImageModal,
 };
