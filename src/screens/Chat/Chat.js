@@ -25,29 +25,18 @@ import * as Permissions from 'expo-permissions';
 import * as DocumentPicker from 'expo-document-picker';
 import { Audio, AVPlaybackStatus } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
-import base64 from 'react-native-base64';
-import AutogrowInput from 'react-native-autogrow-input';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import { GiftedChat, Bubble } from 'react-native-gifted-chat';
 import { ProgressDialog } from 'react-native-simple-dialogs';
-import DropdownAlert from 'react-native-dropdownalert';
-import NavigationBar from 'react-native-navbar';
-import colors from '../../assets/colors';
 import styles from './styles';
-import { DisplayText, ProfileImage } from '../../components';
+import { DisplayText, ImageModal, PDFModal } from '../../components';
 import {
-  CreateThreadEndpoint,
   getUserDetails,
   GetAllMessageEndPoint,
-  getRouteToken,
-  WebSocketEndpoint,
   getProfile,
 } from '../Utils/Utils';
 import moment from 'moment';
+import PDFReader from 'rn-pdf-reader-js';
 import axios from 'react-native-axios';
 import { Asset } from 'expo-asset';
-// import RNFetchBlob from 'rn-fetch-blob';
-import { transcode } from 'react-native-audio-transcoder';
 
 const { State: TextInputState } = TextInput;
 
@@ -117,6 +106,15 @@ export default class Chat extends Component {
         'https://gravatar.com/avatar/02bf38fddbfe9f82b94203336f9ebc41?s=200&d=retro',
       secondUsername: '',
       shift: new Animated.Value(0),
+      imageState: {
+        name: '',
+        url: '',
+      },
+      fileState: {
+        name: '',
+        uri:
+          'https://res.cloudinary.com/https-cyberve-com/image/upload/v1603755172/ojhrcygkm1qgz3tqrtza.pdf',
+      },
       audioState: {
         haveRecordingPermissions: false,
         isLoading: false,
@@ -338,6 +336,28 @@ export default class Chat extends Component {
         // console.log(res);
         let json = await res.json();
         console.log(JSON.stringify(json.secure_url));
+        const { threadId, connection, messages } = this.state;
+        messages.push({
+          direction: 'right',
+          audio: json.secure_url,
+          messageType: 'audio',
+        });
+        let data = JSON.stringify({
+          threadId: threadId,
+          text: '',
+          file: '',
+          image: '',
+          audio: json.secure_url,
+          messageType: 'audio',
+        });
+        this.setState({
+          messages: this.state.messages,
+        });
+        try {
+          connection.send(data); //send data to the server
+        } catch (error) {
+          console.log(error);
+        }
       })
       .catch((err) => console.log('error', err));
 
@@ -474,49 +494,6 @@ export default class Chat extends Component {
     return '';
   }
 
-  _renderAudio = () => {
-    this.state.audioState.isPlaybackAllowed
-      ? render(
-          <View style={playerStyle.volumeContainer}>
-            <View style={playerStyle.playStopContainer}>
-              <TouchableHighlight
-                underlayColor={BACKGROUND_COLOR}
-                style={playerStyle.wrapper}
-                onPress={this._onPlayPausePressed}
-                disabled={!this.state.isPlaybackAllowed || this.state.isLoading}
-              >
-                <Image
-                  style={playerStyle.image}
-                  source={
-                    this.state.audioState.isPlaying
-                      ? ICON_PAUSE_BUTTON.module
-                      : ICON_PLAY_BUTTON.module
-                  }
-                />
-              </TouchableHighlight>
-            </View>
-            <View style={playerStyle.playbackContainer}>
-              <Slider
-                style={playerStyle.playbackSlider}
-                trackImage={ICON_TRACK_1.module}
-                thumbImage={ICON_THUMB_1.module}
-                value={this._getSeekSliderPosition()}
-                onValueChange={this._onSeekSliderValueChange}
-                onSlidingComplete={this._onSeekSliderSlidingComplete}
-                disabled={
-                  !this.state.audioState.isPlaybackAllowed ||
-                  this.state.audioState.isLoading
-                }
-              />
-              <Text style={[playerStyle.playbackTimestamp]}>
-                {this._getPlaybackTimestamp()}
-              </Text>
-            </View>
-          </View>
-        )
-      : null;
-  };
-
   getPermissionAsync = async () => {
     if (Constants.platform.ios) {
       const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
@@ -540,11 +517,11 @@ export default class Chat extends Component {
 
     if (!result.cancelled) {
       let base64Img = `data:image/jpg;base64,${result.base64}`;
-      return this.handleAddPicture(base64Img);
+      return this._handleImageUpload(base64Img);
     }
   };
 
-  handleAddPicture = (base64Img) => {
+  _handleImageUpload = (base64Img) => {
     fetch('https://api.cloudinary.com/v1_1/https-cyberve-com/image/upload', {
       body: JSON.stringify({
         file: base64Img,
@@ -560,8 +537,28 @@ export default class Chat extends Component {
         console.log(data);
         this.setState({ image: data.url });
 
-        console.log('state', this.state.image);
-        this.handleSaveData(data.url);
+        const { threadId, connection, messages } = this.state;
+        let time = moment().utcOffset('+01:00').format('hh:mm:a');
+        messages.push({
+          direction: 'right',
+          image: data.url,
+          messageType: 'image',
+          time,
+        });
+        let msg = JSON.stringify({
+          threadId: threadId,
+          image: data.url,
+          messageType: 'image',
+        });
+        this.setState({
+          messages: this.state.messages,
+        });
+        try {
+          connection.send(msg); //send data to the server
+        } catch (error) {
+          console.log(error);
+        }
+
         this.hideLoadingDialogue();
       })
       .catch((err) => {
@@ -590,7 +587,6 @@ export default class Chat extends Component {
     });
 
     if (!result.cancelled) {
-      // let base64Doc = `${base64.encode(result.uri)}`;
       const source = {
         name: result.name,
         size: result.size,
@@ -620,36 +616,33 @@ export default class Chat extends Component {
       .then(async (res) => {
         let json = await res.json();
         console.log(JSON.stringify(json.secure_url));
+        this.setState({ fileState: { uri: json.secure_url } });
+        const { threadId, connection, messages } = this.state;
+        let time = moment().utcOffset('+01:00').format('hh:mm:a');
+        messages.push({
+          direction: 'right',
+          file: json.secure_url,
+          messageType: 'file',
+          fileName: file.name,
+          time,
+        });
+        let data = JSON.stringify({
+          threadId: threadId,
+          file: json.secure_url,
+          fileName: file.name,
+          messageType: 'file',
+        });
+
+        this.setState({
+          messages: this.state.messages,
+        });
+        try {
+          connection.send(data); //send data to the server
+        } catch (error) {
+          console.log(error);
+        }
       })
       .catch((err) => console.log('error', err));
-  };
-
-  handleSaveData = (data) => {
-    this.setState({
-      message: [...this.state.message, data],
-    });
-  };
-
-  handleImageView = () => {
-    return this.setState({
-      showAlert: true,
-      showSuccessAlert: false,
-      profilePic: this.state.image,
-    });
-  };
-
-  _renderPicture = () => {
-    this.state.image !== '' ? (
-      <View>
-        <TouchableOpacity
-          style={{ width: 40, height: 40, borderRadius: 5 }}
-          onPress={() => this.handleImageView()}
-        >
-          {' '}
-          <Image source={{ uri: this.state.image }} />
-        </TouchableOpacity>
-      </View>
-    ) : null;
   };
 
   //this is a bit sloppy: this is to make sure it scrolls to the bottom when a message is added, but
@@ -704,10 +697,6 @@ export default class Chat extends Component {
     // websocket onopen event listener
     connection.onopen = () => {
       this.setState({ connection: connection });
-      // console.log(
-      //   'connected websocket main component.........',
-      //   connection.readyState
-      // );
       that.timeout = 250; // reset timer to 250 on open of websocket
       clearTimeout(connectInterval); // clear Interval onOpen of websocket
     };
@@ -719,13 +708,6 @@ export default class Chat extends Component {
 
     // websocket onclose event listener
     connection.onclose = (e) => {
-      // console.log(
-      //   `Socket is closed. attempt reconnecting in ${Math.min(
-      //     10000 / 1000,
-      //     (that.timeout + that.timeout) / 1000
-      //   )} second.`,
-      //   e
-      // );
       that.timeout = that.timeout + that.timeout; //increment retry interval
       connectInterval = setTimeout(this.check, Math.min(10000, that.timeout)); //call check function after timeout
     };
@@ -752,10 +734,11 @@ export default class Chat extends Component {
     let inputMessage = inputBarText.toString();
     let time = moment().utcOffset('+01:00').format('hh:mm:a');
     let body = `${inputMessage}\n${time}`;
-    messages.push({ direction: 'right', text: body });
+    messages.push({ direction: 'right', text: body, messageType: 'text' });
     let data = JSON.stringify({
       threadId: threadId,
       text: inputMessage,
+      messageType: 'text',
     });
     this.setState({
       messages: this.state.messages,
@@ -787,10 +770,11 @@ export default class Chat extends Component {
       this.setState({
         showAlert: true,
         showLoading: false,
-        message: res.meta.message,
+        message: res.data.messages,
       });
     } else if (res.meta.status == 200 && res.meta.status < 300) {
       const dataResponse = res.data.messages;
+
       this.handleConvertData(dataResponse);
       this.setState({
         showLoading: false,
@@ -812,16 +796,58 @@ export default class Chat extends Component {
     let userDetails = await getUserDetails();
     let userid = userDetails.data.id;
     dataResponse.forEach((data) => {
-      const message = data.text,
-        time = data.createdAt,
+      // console.log('Log Messages', data);
+      const time = data.createdAt,
         name = data.sender.fName,
         newDate = moment(time).startOf('minute').fromNow();
       if (data.sender.id == userid) {
-        let body = `${message}\n${newDate}`;
-        return messages.push({ direction: 'right', text: body });
+        if (data.messageType === 'text') {
+          let body = `${data.text}\n${newDate}`;
+          return messages.push({
+            direction: 'right',
+            messageType: 'text',
+            text: body,
+          });
+        } else if (data.messageType === 'image') {
+          return messages.push({
+            direction: 'right',
+            messageType: 'image',
+            image: data.image,
+            time: newDate,
+          });
+        } else if (data.messageType === 'file') {
+          return messages.push({
+            direction: 'right',
+            messageType: 'file',
+            file: data.file,
+            fileName: data.fileName,
+            time: newDate,
+          });
+        }
       } else {
-        let body = `${message}\n${newDate}\n${name}`;
-        return messages.push({ direction: 'left', text: body });
+        if (data.messageType === 'text') {
+          let body = `${data.text}\n${newDate}\n${name}`;
+          return messages.push({
+            direction: 'left',
+            messageType: 'text',
+            text: body,
+          });
+        } else if (data.messageType === 'image') {
+          return messages.push({
+            direction: 'left',
+            messageType: 'image',
+            image: data.image,
+            time: newDate,
+          });
+        } else if (data.messageType === 'file') {
+          return messages.push({
+            direction: 'left',
+            messageType: 'file',
+            file: data.file,
+            fileName: data.fileName,
+            time: newDate,
+          });
+        }
       }
     });
   };
@@ -895,24 +921,39 @@ export default class Chat extends Component {
   };
 
   render() {
-    const { showLoading, time, shift, messages, image } = this.state;
+    const { showLoading, time, shift, messages } = this.state;
+
     var newMessages = [];
     messages.forEach(function (message, index) {
-      newMessages.push(
-        <MessageBubble
-          key={index}
-          direction={message.direction}
-          text={`${message.text} ${time}`}
-          // handleImageView={this.handleImageView}
-          image={image}
-        />
-      );
+      if (message.messageType === 'text') {
+        newMessages.push(
+          <TextBubble
+            key={index}
+            direction={message.direction}
+            text={`${message.text} ${time}`}
+          />
+        );
+      } else if (message.messageType === 'image') {
+        newMessages.push(
+          <ImageBubble
+            key={index}
+            direction={message.direction}
+            image={message.image}
+            time={message.time}
+          />
+        );
+      } else if (message.messageType === 'file') {
+        newMessages.push(
+          <FileBubble
+            key={index}
+            direction={message.direction}
+            uri={message.file}
+            name={message.fileName}
+            time={message.time}
+          />
+        );
+      }
     });
-    // console.log('messag chckeeee', messages)
-    //   if (Object.keys(messages).includes('senderId') && messages.senderId === userid) {
-    //     return null
-    //   }
-
     return (
       <SafeAreaView style={styles.outer}>
         <StatusBar barStyle={'dark-content'} />
@@ -961,44 +1002,6 @@ export default class Chat extends Component {
               style={styles.messagesBubble}
             >
               {newMessages}
-              <View style={playerStyle.volumeContainer}>
-                <View style={playerStyle.playStopContainer}>
-                  <TouchableHighlight
-                    style={playerStyle.wrapper}
-                    onPress={this._onPlayPausePressed}
-                    // disabled={
-                    //   !this.state.isPlaybackAllowed ||
-                    //   this.state.audioState.isLoading
-                    // }
-                  >
-                    <Image
-                      style={playerStyle.image}
-                      source={
-                        this.state.audioState.isPlaying
-                          ? ICON_PAUSE_BUTTON.module
-                          : ICON_PLAY_BUTTON.module
-                      }
-                    />
-                  </TouchableHighlight>
-                </View>
-                <View style={playerStyle.playbackContainer}>
-                  <Slider
-                    style={playerStyle.playbackSlider}
-                    trackImage={ICON_TRACK_1.module}
-                    thumbImage={ICON_THUMB_1.module}
-                    value={this._getSeekSliderPosition()}
-                    onValueChange={this._onSeekSliderValueChange}
-                    onSlidingComplete={this._onSeekSliderSlidingComplete}
-                    disabled={
-                      !this.state.audioState.isPlaybackAllowed ||
-                      this.state.audioState.isLoading
-                    }
-                  />
-                  <Text style={[playerStyle.playbackTimestamp]}>
-                    {this._getPlaybackTimestamp()}
-                  </Text>
-                </View>
-              </View>
             </ScrollView>
             {/* <InputBar onSendPressed={() => this._sendMessage()}
             onSizeChange={() => this._onInputSizeChange()}
@@ -1055,12 +1058,12 @@ export default class Chat extends Component {
               <View style={playerStyle.volumeContainer}>
                 <View style={playerStyle.playStopContainer}>
                   <TouchableHighlight
+                    underlayColor={BACKGROUND_COLOR}
                     style={playerStyle.wrapper}
                     onPress={this._onPlayPausePressed}
-                    // disabled={
-                    //   !this.state.isPlaybackAllowed ||
-                    //   this.state.audioState.isLoading
-                    // }
+                    disabled={
+                      !this.state.isPlaybackAllowed || this.state.isLoading
+                    }
                   >
                     <Image
                       style={playerStyle.image}
@@ -1089,16 +1092,6 @@ export default class Chat extends Component {
                     {this._getPlaybackTimestamp()}
                   </Text>
                 </View>
-              </View>
-              <View>
-                <TouchableOpacity onPress={() => this.handleImageView()}>
-                  <Image
-                    style={{ width: 200, height: 200, borderRadius: 5 }}
-                    source={{
-                      uri: this.state.image,
-                    }}
-                  />
-                </TouchableOpacity>
               </View>
             </ScrollView>
             {/* <InputBar onSendPressed={() => this._sendMessage()}
@@ -1147,19 +1140,13 @@ export default class Chat extends Component {
           title='Processing'
           message='Please wait...'
         />
-
-        <ProfileImage
-          image={this.state.image}
-          handleCloseNotification={this.handleCloseNotification}
-          visible={this.state.showAlert}
-        />
       </SafeAreaView>
     );
   }
 }
 
 //The bubbles that appear on the left or the right for the messages.
-class MessageBubble extends Component {
+class TextBubble extends Component {
   render() {
     //These spacers make the message bubble stay to the left or the right, depending on who is speaking, even if the message is multiple lines.
     let leftSpacer =
@@ -1178,35 +1165,258 @@ class MessageBubble extends Component {
         : styles.messageBubbleTextRight;
 
     return (
-      <>
+      <View
+        style={{
+          justifyContent: 'space-between',
+          flexDirection: 'row',
+          marginBottom: 14,
+        }}
+      >
+        <StatusBar barStyle={'dark-content'} />
+        {leftSpacer}
+        <View style={bubbleStyles}>
+          <Text style={bubbleTextStyle}>{this.props.text}</Text>
+        </View>
+        {rightSpacer}
+      </View>
+    );
+  }
+}
+
+class ImageBubble extends Component {
+  state = {
+    showAlert: false,
+    showSuccessAlert: false,
+    profilePic: '',
+    showLoading: false,
+  };
+
+  handleImageView = () => {
+    return this.setState({
+      showAlert: true,
+      showSuccessAlert: false,
+      profilePic: this.props.image,
+    });
+  };
+
+  handleCloseNotification = () => {
+    return this.setState({
+      showAlert: false,
+      showSuccessAlert: false,
+    });
+  };
+
+  render() {
+    //These spacers make the message bubble stay to the left or the right, depending on who is speaking, even if the message is multiple lines.
+    let leftSpacer =
+      this.props.direction === 'left' ? null : <View style={{ width: 140 }} />;
+    let rightSpacer =
+      this.props.direction === 'left' ? <View style={{ width: 140 }} /> : null;
+
+    let bubbleStyles =
+      this.props.direction === 'left'
+        ? [styles.messageBubble, styles.messageBubbleLeft]
+        : [styles.messageBubble, styles.messageBubbleRight];
+
+    let bubbleTextStyle =
+      this.props.direction === 'left'
+        ? styles.messageBubbleTextLeft
+        : styles.messageBubbleTextRight;
+    return (
+      <View
+        style={{
+          justifyContent: 'space-between',
+          flexDirection: 'row',
+          marginBottom: 14,
+        }}
+      >
+        <StatusBar barStyle={'dark-content'} />
+        {leftSpacer}
+        <View style={{ marginRight: 15 }}>
+          <TouchableOpacity
+            onPress={() => {
+              this.handleImageView();
+            }}
+          >
+            <Image
+              style={{ width: 200, height: 200, borderRadius: 5 }}
+              source={{
+                uri: this.props.image,
+              }}
+            />
+            <Text style={bubbleTextStyle}>{this.props.time}</Text>
+          </TouchableOpacity>
+        </View>
+        <ImageModal
+          image={this.props.image}
+          handleCloseNotification={this.handleCloseNotification}
+          visible={this.state.showAlert}
+        />
+        {rightSpacer}
+      </View>
+    );
+  }
+}
+
+class FileBubble extends Component {
+  state = {
+    showAlert: false,
+    showSuccessAlert: false,
+    pdf: '',
+    showLoading: false,
+  };
+
+  handlePDFView = () => {
+    return this.setState({
+      showAlert: true,
+      showSuccessAlert: false,
+      pdf: this.props.uri,
+    });
+  };
+
+  handleCloseModal = () => {
+    return this.setState({
+      showAlert: false,
+      showSuccessAlert: false,
+    });
+  };
+
+  render() {
+    //These spacers make the message bubble stay to the left or the right, depending on who is speaking, even if the message is multiple lines.
+    let leftSpacer =
+      this.props.direction === 'left' ? null : <View style={{ width: 140 }} />;
+    let rightSpacer =
+      this.props.direction === 'left' ? <View style={{ width: 140 }} /> : null;
+
+    let bubbleStyles =
+      this.props.direction === 'left'
+        ? [styles.messageBubble, styles.messageBubbleLeft]
+        : [styles.messageBubble, styles.messageBubbleRight];
+
+    let bubbleTextStyle =
+      this.props.direction === 'left'
+        ? styles.messageBubbleTextLeft
+        : styles.messageBubbleTextRight;
+    return (
+      <View
+        style={{
+          justifyContent: 'space-between',
+          flexDirection: 'row',
+          marginBottom: 14,
+        }}
+      >
+        <StatusBar barStyle={'dark-content'} />
+        {leftSpacer}
         <View
           style={{
-            justifyContent: 'space-between',
+            marginTop: 8,
+            marginRight: 2,
+            marginLeft: 10,
+            paddingHorizontal: 10,
+            paddingVertical: 6,
             flexDirection: 'row',
-            marginBottom: 14,
+            flex: 1,
+            shadowOffset: { height: 0, width: 0 },
+            shadowColor: '#ffffff66',
+            shadowOpacity: 0.25,
+            shadowRadius: 2.26,
+            alignContent: 'center',
           }}
         >
-          <StatusBar barStyle={'dark-content'} />
-          {leftSpacer}
-          <View style={bubbleStyles}>
-            <Text style={bubbleTextStyle}>{this.props.text}</Text>
-          </View>
-          {rightSpacer}
-        </View>
-        {/* <View
-          style={{
-            // justifyContent: 'space-between',
-            flexDirection: 'column',
-          }}
-        >
-          <TouchableOpacity onPress={() => this.props.handleImageView}>
+          <TouchableOpacity
+            onPress={() => {
+              this.handlePDFView();
+            }}
+          >
             <Image
-              style={{ width: 100, height: 100, borderRadius: 5 }}
-              source={{ uri: this.props.image }}
+              style={{ width: 200, height: 50, borderRadius: 5 }}
+              source={require('../../assets/images/pdf-image.png')}
             />
+            <View style={bubbleTextStyle}>
+              <Text numberOfLines={1}>{this.props.name.substring(0, 25)}</Text>
+              <Text>{this.props.time}</Text>
+            </View>
           </TouchableOpacity>
-        </View> */}
-      </>
+        </View>
+        <PDFModal
+          uri={this.props.uri}
+          handleCloseModal={this.handleCloseModal}
+          visible={this.state.showAlert}
+        />
+        {rightSpacer}
+      </View>
+    );
+  }
+}
+
+class AudioBubble extends Component {
+  render() {
+    //These spacers make the message bubble stay to the left or the right, depending on who is speaking, even if the message is multiple lines.
+    let leftSpacer =
+      this.props.direction === 'left' ? null : <View style={{ width: 140 }} />;
+    let rightSpacer =
+      this.props.direction === 'left' ? <View style={{ width: 140 }} /> : null;
+
+    let bubbleStyles =
+      this.props.direction === 'left'
+        ? [styles.messageBubble, styles.messageBubbleLeft]
+        : [styles.messageBubble, styles.messageBubbleRight];
+
+    let bubbleTextStyle =
+      this.props.direction === 'left'
+        ? styles.messageBubbleTextLeft
+        : styles.messageBubbleTextRight;
+
+    return (
+      <View
+        style={{
+          justifyContent: 'space-between',
+          flexDirection: 'row',
+          marginBottom: 14,
+        }}
+      >
+        <StatusBar barStyle={'dark-content'} />
+        {leftSpacer}
+        <View style={playerStyle.volumeContainer}>
+          <View style={playerStyle.playStopContainer}>
+            <TouchableHighlight
+              style={playerStyle.wrapper}
+              onPress={this._onPlayPausePressed}
+              // disabled={
+              //   !this.state.isPlaybackAllowed ||
+              //   this.state.audioState.isLoading
+              // }
+            >
+              <Image
+                style={playerStyle.image}
+                source={
+                  this.state.audioState.isPlaying
+                    ? ICON_PAUSE_BUTTON.module
+                    : ICON_PLAY_BUTTON.module
+                }
+              />
+            </TouchableHighlight>
+          </View>
+          <View style={playerStyle.playbackContainer}>
+            <Slider
+              style={playerStyle.playbackSlider}
+              trackImage={ICON_TRACK_1.module}
+              thumbImage={ICON_THUMB_1.module}
+              value={this._getSeekSliderPosition()}
+              onValueChange={this._onSeekSliderValueChange}
+              onSlidingComplete={this._onSeekSliderSlidingComplete}
+              disabled={
+                !this.state.audioState.isPlaybackAllowed ||
+                this.state.audioState.isLoading
+              }
+            />
+            <Text style={[playerStyle.playbackTimestamp]}>
+              {this._getPlaybackTimestamp()}
+            </Text>
+          </View>
+        </View>
+        {rightSpacer}
+      </View>
     );
   }
 }
