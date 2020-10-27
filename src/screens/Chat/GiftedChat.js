@@ -32,7 +32,7 @@ export default class GiftedChat extends Component {
     hasPermission: false,
     audioPath: `${
       AudioUtils.DocumentDirectoryPath
-    }/${this.messageIdGenerator()}test.aac`, 
+    }/${this.messageIdGenerator()}test.aac`,
     playAudio: false,
     fetchChats: false,
     audioSettings: {
