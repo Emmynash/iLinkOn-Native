@@ -12,7 +12,7 @@ import {
   TouchableHighlight,
   Keyboard,
   TextInput,
-  KeyboardAvoidingView
+  KeyboardAvoidingView,
 } from 'react-native';
 import KeyboardSpacer from 'react-native-keyboard-spacer';
 import AutogrowInput from 'react-native-autogrow-input';
@@ -28,14 +28,12 @@ import {
   GetAllMessageEndPoint,
   getRouteToken,
   WebSocketEndpoint,
-  getProfile
-} from '../Utils/Utils'
+  getProfile,
+} from '../Utils/Utils';
 import moment from 'moment';
 import DropdownAlert from 'react-native-dropdownalert';
 
-
 const ChatHooks = ({ navigation }) => {
-
   const { navigate } = useNavigation();
   const ws = useRef(null);
   const [messages, setMessages] = useState([]),
@@ -52,44 +50,46 @@ const ChatHooks = ({ navigation }) => {
     [showAlert, setShowAlert] = useState({
       showAlert: false,
       showSuccessAlert: false,
-      message: ''
+      message: '',
     }),
     [displayPhoto, setDisplayPhoto] = useState(''),
     [threadId, setThreadId] = useState(''),
     // [ws, setWs] = useState(null),
     [secondUsername, setSecondUsername] = useState(''),
-    [profilePhoto, setProfilePhoto] = useState('https://gravatar.com/avatar/02bf38fddbfe9f82b94203336f9ebc41?s=200&d=retro');
-  let timeout = (250); // Initial timeout duration as a class variable
-
+    [profilePhoto, setProfilePhoto] = useState(
+      'https://gravatar.com/avatar/02bf38fddbfe9f82b94203336f9ebc41?s=200&d=retro'
+    );
+  let timeout = 250; // Initial timeout duration as a class variable
 
   useEffect(() => {
     // connect();
-    console.log(ws.current)
+    console.log(ws.current);
     let profile = getProfile();
     const token = profile.access_token;
     let ws = new WebSocket(`wss://ilinkon.herokuapp.com/?token=${token}`);
     var connectInterval;
 
     ws.onopen = () => {
-      console.log("connected websocket main component", ws);
-      setWs(ws)
-      timeout = 250; // reset timer to 250 on open of websocket  
-      clearTimeout(connectInterval); // clear Interval onOpen of websocket 
+      console.log('connected websocket main component', ws);
+      setWs(ws);
+      timeout = 250; // reset timer to 250 on open of websocket
+      clearTimeout(connectInterval); // clear Interval onOpen of websocket
     };
 
     ws.onmessage = (e) => {
-      console.log('messagesssssssss is working');
+      console.log('message loaded');
       const message = JSON.parse(e.data);
-      time = message.createdAt,
-        newDate = moment(time).startOf('second').fromNow();
-      let body = `${message}\n${newDate}\n${secondUsername}`
-      return messages.push({ direction: "left", text: body });
+      (time = message.createdAt),
+        (newDate = moment(time).startOf('second').fromNow());
+      let body = `${message}\n${newDate}\n${secondUsername}`;
+      return messages.push({ direction: 'left', text: body });
     };
     // websocket onclose event listener
-    ws.onclose = e => {
+    ws.onclose = (e) => {
       console.log(
         `Socket is closed. Reconnect will be attempted in ${Math.min(
-          10000 / 1000, (timeout + timeout) / 1000
+          10000 / 1000,
+          (timeout + timeout) / 1000
         )} second.`,
         e.reason
       );
@@ -98,22 +98,18 @@ const ChatHooks = ({ navigation }) => {
     };
 
     // websocket onerror event listener
-    ws.onerror = err => {
+    ws.onerror = (err) => {
       console.log();
-      (
-        "Socket encountered error: ",
-        err.message,
-        "Closing socket"
-      );
+      'Socket encountered error: ', err.message, 'Closing socket';
       ws.close();
     };
     return () => {
       ws.close();
-    }
+    };
   }, []);
 
   useEffect(() => {
-    _getChatMessages()
+    _getChatMessages();
   }, []);
 
   const _getChatMessages = async () => {
@@ -124,15 +120,14 @@ const ChatHooks = ({ navigation }) => {
       token = profile.access_token,
       name = userDetails.fName,
       id = userDetails.id;
-    setToken(token)
-    setName(name)
-    setThreadId(data.id)
-    setSecondUsername(item.fName || item.name)
-    setProfilePhoto(item.profilePhoto || item.displayPhoto)
+    setToken(token);
+    setName(name);
+    setThreadId(data.id);
+    setSecondUsername(item.fName || item.name);
+    setProfilePhoto(item.profilePhoto || item.displayPhoto);
     let threadId = data.id;
     await handleGetAllMessage(threadId, token);
-
-  }
+  };
   const showLoadingDialogue = () => {
     setShowLoading(true);
   };
@@ -146,30 +141,29 @@ const ChatHooks = ({ navigation }) => {
   //   return dropDownAlertRef.alertWithType(type, title, message);
   // }
 
-
   /**
    * @function connect
    * This function establishes the connect with the websocket and also ensures constant reconnection if connection closes
    */
   const connect = async () => {
-
     let profile = await getProfile();
     const token = profile.access_token;
     let ws = new WebSocket(`wss://ilinkon.herokuapp.com/?token=${token}`);
     var connectInterval;
 
     ws.onopen = () => {
-      console.log("connected websocket main component");
+      console.log('connected websocket main component');
       // setWs(ws)
-      timeout = 250; // reset timer to 250 on open of websocket  
-      clearTimeout(connectInterval); // clear Interval onOpen of websocket 
+      timeout = 250; // reset timer to 250 on open of websocket
+      clearTimeout(connectInterval); // clear Interval onOpen of websocket
     };
 
     // websocket onclose event listener
-    ws.onclose = e => {
+    ws.onclose = (e) => {
       console.log(
         `Socket is closed. Reconnect will be attempted in ${Math.min(
-          10000 / 1000, (timeout + timeout) / 1000
+          10000 / 1000,
+          (timeout + timeout) / 1000
         )} second.`,
         e.reason
       );
@@ -178,16 +172,11 @@ const ChatHooks = ({ navigation }) => {
     };
 
     // websocket onerror event listener
-    ws.onerror = err => {
+    ws.onerror = (err) => {
       console.warn();
-      (
-        "Socket encountered error: ",
-        err.message,
-        "Closing socket"
-      );
+      'Socket encountered error: ', err.message, 'Closing socket';
       ws.close();
     };
-
   };
 
   /**
@@ -198,31 +187,29 @@ const ChatHooks = ({ navigation }) => {
   };
 
   const _sendMessage = () => {
-    messages.push({ direction: "right", text: inputBarText });
+    messages.push({ direction: 'right', text: inputBarText });
     let inputMessage = inputBarText.toString();
     let data = JSON.stringify({
-      'threadId': threadId,
-      'text': inputMessage
-    })
-    setMessages(messages)
-    setInputBarText('')
+      threadId: threadId,
+      text: inputMessage,
+    });
+    setMessages(messages);
+    setInputBarText('');
     try {
-      ws.send(data) //send data to the server
-      console.log('message send', data)
-
+      ws.send(data); //send data to the server
+      console.log('message send', data);
     } catch (error) {
-      console.log(error) // catch error
+      console.log(error); // catch error
     }
-  }
-
+  };
 
   const handleGetAllMessage = async (threadId, token) => {
-    showLoadingDialogue()
+    showLoadingDialogue();
     const settings = {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `${token}`
+        Authorization: `${token}`,
       },
     };
     let endpoint = `${GetAllMessageEndPoint}/${threadId}?page=1&pageSize=1`;
@@ -230,27 +217,27 @@ const ChatHooks = ({ navigation }) => {
     const res = await response.json();
     // console.log('dfdfdfdfdfdfdfdfdfdfdfd', res)
     if (res.meta.status >= 300) {
-      hideLoadingDialogue()
+      hideLoadingDialogue();
       setShowAlert({
         showAlert: true,
-        message: res.meta.message
+        message: res.meta.message,
       });
     } else if (res.meta.status == 200 && res.meta.status < 300) {
       const dataResponse = res.data.messages;
-      handleConvertData(dataResponse)
-      hideLoadingDialogue()
+      handleConvertData(dataResponse);
+      hideLoadingDialogue();
       setShowAlert({
         showLoading: false,
         message: dataResponse,
       });
-      hideLoadingDialogue()
+      hideLoadingDialogue();
       setShowAlert({
         showAlert: true,
-        message: dataResponse
+        message: dataResponse,
       });
     } else {
       if (res.meta.message) {
-        hideLoadingDialogue()
+        hideLoadingDialogue();
         setShowAlert({
           showAlert: true,
           message: res.meta.message,
@@ -260,28 +247,30 @@ const ChatHooks = ({ navigation }) => {
   };
 
   const handleConvertData = async (dataResponse) => {
-
-    let userDetails = await getUserDetails()
-    let userid = userDetails.data.id
+    let userDetails = await getUserDetails();
+    let userid = userDetails.data.id;
     dataResponse.forEach((data) => {
       console.log('user......check', userDetails.data.id);
       const message = data.text,
         time = data.createdAt,
         newDate = moment(time).startOf('minute').fromNow();
       if (data.sender.id == userid) {
-        let body = `${message}\n${newDate}`
-        return setMessages(msg => msg.concat({ direction: "right", text: body }));
+        let body = `${message}\n${newDate}`;
+        return setMessages((msg) =>
+          msg.concat({ direction: 'right', text: body })
+        );
+      } else {
+        let body = `${message}\n${newDate}\n${secondUsername}`;
+        return setMessages((messages) =>
+          messages.concat({ direction: 'left', text: body })
+        );
       }
-      else {
-        let body = `${message}\n${newDate}\n${secondUsername}`
-        return setMessages(messages => messages.concat({ direction: "left", text: body }));
-      }
-    })
-  }
+    });
+  };
 
   const _onChangeInputBarText = (text) => {
-    setInputBarText(text)
-  }
+    setInputBarText(text);
+  };
 
   //This event fires way too often.
   //We need to move the last message up if the input bar expands due to the user's new message exceeding the height of the box.
@@ -291,8 +280,7 @@ const ChatHooks = ({ navigation }) => {
   //This is to navigate back to the supportdesk
   const handleBackPress = () => {
     return navigate('Messages');
-  }
-
+  };
 
   // const _messageBubble = () => {
   //   let new_messages = [];
@@ -311,9 +299,7 @@ const ChatHooks = ({ navigation }) => {
       <StatusBar barStyle={'dark-content'} />
       {/* <DropdownAlert ref={ref => dropDownAlertRef = ref} /> */}
       <View style={styles.navBar}>
-        <TouchableOpacity
-          onPress={handleBackPress}
-          style={styles.headerImage}>
+        <TouchableOpacity onPress={handleBackPress} style={styles.headerImage}>
           <Image
             onPress={handleBackPress}
             source={require('../../assets/images/back.png')}
@@ -334,12 +320,11 @@ const ChatHooks = ({ navigation }) => {
       {/* toolbar */}
       <ScrollView
         // ref={(ref) => { scrollView = ref }}
-        style={styles.messages}>
+        style={styles.messages}
+      >
         {leftSpacer}
         <View style={bubbleStyles}>
-          <Text style={bubbleTextStyle}>
-            {this.props.text}
-          </Text>
+          <Text style={bubbleTextStyle}>{this.props.text}</Text>
         </View>
         {rightSpacer}
         {/* {messages} */}
@@ -351,9 +336,9 @@ const ChatHooks = ({ navigation }) => {
           multiline={true}
           onChangeText={(text) => _onChangeInputBarText(text)}
           value={inputBarText}
-        // ref={(ref) => { autogrowInput = ref }}
-        // defaultHeight={35}
-        // onContentSizeChange={() => _onInputSizeChange()}
+          // ref={(ref) => { autogrowInput = ref }}
+          // defaultHeight={35}
+          // onContentSizeChange={() => _onInputSizeChange()}
         />
         <TouchableHighlight
           style={styles.sendButton}
@@ -369,34 +354,38 @@ const ChatHooks = ({ navigation }) => {
       <KeyboardSpacer />
       <ProgressDialog
         visible={showLoading}
-        title="Processing"
-        message="Please wait..." />
+        title='Processing'
+        message='Please wait...'
+      />
     </SafeAreaView>
   );
-}
+};
 export default ChatHooks;
-
 
 //The bubbles that appear on the left or the right for the messages.
 class MessageBubble extends Component {
   render() {
-
     //These spacers make the message bubble stay to the left or the right, depending on who is speaking, even if the message is multiple lines.
-    let leftSpacer = this.props.direction === 'left' ? null : <View style={{ width: 140 }} />;
-    let rightSpacer = this.props.direction === 'left' ? <View style={{ width: 140 }} /> : null;
+    let leftSpacer =
+      this.props.direction === 'left' ? null : <View style={{ width: 140 }} />;
+    let rightSpacer =
+      this.props.direction === 'left' ? <View style={{ width: 140 }} /> : null;
 
-    let bubbleStyles = this.props.direction === 'left' ? [styles.messageBubble, styles.messageBubbleLeft] : [styles.messageBubble, styles.messageBubbleRight];
+    let bubbleStyles =
+      this.props.direction === 'left'
+        ? [styles.messageBubble, styles.messageBubbleLeft]
+        : [styles.messageBubble, styles.messageBubbleRight];
 
-    let bubbleTextStyle = this.props.direction === 'left' ? styles.messageBubbleTextLeft : styles.messageBubbleTextRight;
+    let bubbleTextStyle =
+      this.props.direction === 'left'
+        ? styles.messageBubbleTextLeft
+        : styles.messageBubbleTextRight;
 
     return (
       <View style={{ justifyContent: 'space-between', flexDirection: 'row' }}>
-
         {leftSpacer}
         <View style={bubbleStyles}>
-          <Text style={bubbleTextStyle}>
-            {this.props.text}
-          </Text>
+          <Text style={bubbleTextStyle}>{this.props.text}</Text>
         </View>
         {rightSpacer}
       </View>
@@ -443,4 +432,3 @@ class MessageBubble extends Component {
 //     );
 //   }
 // }
-
