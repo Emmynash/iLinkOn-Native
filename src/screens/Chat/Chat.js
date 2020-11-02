@@ -27,15 +27,20 @@ import { Audio, AVPlaybackStatus } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
 import { ProgressDialog } from 'react-native-simple-dialogs';
 import styles from './styles';
-import { DisplayText, ImageModal, PDFModal } from '../../components';
+import {
+  DisplayText,
+  ImageModal,
+  PDFModal,
+  ErrorAlert,
+} from '../../components';
 import {
   getUserDetails,
   GetAllMessageEndPoint,
   getProfile,
 } from '../Utils/Utils';
 import moment from 'moment';
-import PDFReader from 'rn-pdf-reader-js';
-import axios from 'react-native-axios';
+import base64 from 'react-native-base64';
+import Expo from 'expo';
 import { Asset } from 'expo-asset';
 
 const { State: TextInputState } = TextInput;
@@ -87,12 +92,11 @@ export default class Chat extends Component {
       chaterId: '',
       status: '',
       token: '',
-      message: '',
+      alertmessage: '',
       title: '',
       time: '',
       name: '',
-      image:
-        'http://res.cloudinary.com/https-cyberve-com/image/upload/v1602889530/z6h4pjrkyc3po6xgp1tn.jpg',
+      message: '',
       responseMessage: '',
       adminTime: '',
       showAlert: false,
@@ -106,15 +110,6 @@ export default class Chat extends Component {
         'https://gravatar.com/avatar/02bf38fddbfe9f82b94203336f9ebc41?s=200&d=retro',
       secondUsername: '',
       shift: new Animated.Value(0),
-      imageState: {
-        name: '',
-        url: '',
-      },
-      fileState: {
-        name: '',
-        uri:
-          'https://res.cloudinary.com/https-cyberve-com/image/upload/v1603755172/ojhrcygkm1qgz3tqrtza.pdf',
-      },
       audioState: {
         haveRecordingPermissions: false,
         isLoading: false,
@@ -138,7 +133,7 @@ export default class Chat extends Component {
     );
   }
   //fun keyboard stuff- we use these to get the end of the ScrollView to "follow" the top of the InputBar as the keyboard rises and falls
-  UNSAFE_componentWillMount() {
+  async UNSAFE_componentWillMount() {
     this.keyboardDidShowSub = Keyboard.addListener(
       'keyboardDidShow',
       this.handleKeyboardDidShow
@@ -149,11 +144,12 @@ export default class Chat extends Component {
     );
   }
 
-  componentWillUnmount() {
+  async componentWillUnmount() {
     this.mounted = false;
     this.keyboardDidShowSub.remove();
     this.keyboardDidHideSub.remove();
     this.state.connection.close();
+    await this.handleGetAllMessage();
   }
 
   //When the keyboard appears, this gets the ScrollView to move the end back "up" so the last message is visible with the keyboard up
@@ -228,23 +224,11 @@ export default class Chat extends Component {
     }
   };
 
-  _checkAudioPermission = async () => {
-    const response = await Permissions.askAsync(Permissions.AUDIO_RECORDING);
-    if (response.status === 'granted') {
-      console.log(response.status);
-      this.setState({
-        audioState: { haveRecordingPermissions: response.status === 'granted' },
-      });
-      return this._handleAudio();
-    } else {
-      return false;
-    }
-  };
-
   _updateScreenForRecordingStatus = (status) => {
     if (status.canRecord) {
       this.setState({
         audioState: {
+          haveRecordingPermissions: true,
           isRecording: status.isRecording,
           recordingDuration: status.durationMillis,
         },
@@ -253,12 +237,10 @@ export default class Chat extends Component {
       this.setState({
         audioState: {
           isRecording: false,
+          haveRecordingPermissions: false,
           recordingDuration: status.durationMillis,
         },
       });
-      // if (!this.state.audioState.isLoading) {
-      //   this._stopRecordingAndEnablePlayback();
-      // }
     }
   };
 
@@ -291,6 +273,7 @@ export default class Chat extends Component {
     recording.setOnRecordingStatusUpdate(this._updateScreenForRecordingStatus);
 
     this.recording = recording;
+
     await this.recording.startAsync(); // Will call this._updateScreenForRecordingStatus to update the screen.
     this.setState({
       audioState: { isLoading: false },
@@ -317,49 +300,25 @@ export default class Chat extends Component {
       type: 'audio/mpeg',
     };
 
-    var formdata = new FormData();
-
-    formdata.append('file', source);
-    formdata.append('cloud_name', 'https-cyberve-com');
-    formdata.append('upload_preset', 'kvdcspfl');
-    formdata.append('resource_type', 'video');
-
-    fetch('http://api.cloudinary.com/v1_1/https-cyberve-com/auto/upload', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'multipart/form-data',
-      },
-      body: formdata,
-    })
-      .then(async (res) => {
-        // console.log(res);
-        let json = await res.json();
-        console.log(JSON.stringify(json.secure_url));
-        const { threadId, connection, messages } = this.state;
-        messages.push({
-          direction: 'right',
-          audio: json.secure_url,
-          messageType: 'audio',
-        });
-        let data = JSON.stringify({
-          threadId: threadId,
-          text: '',
-          file: '',
-          image: '',
-          audio: json.secure_url,
-          messageType: 'audio',
-        });
-        this.setState({
-          messages: this.state.messages,
-        });
-        try {
-          connection.send(data); //send data to the server
-        } catch (error) {
-          console.log(error);
-        }
-      })
-      .catch((err) => console.log('error', err));
+    const { threadId, connection, messages } = this.state;
+    messages.push({
+      direction: 'right',
+      audio: source.uri,
+      messageType: 'audio',
+    });
+    let data = JSON.stringify({
+      threadId: threadId,
+      audio: source.uri,
+      messageType: 'audio',
+    });
+    this.setState({
+      messages: this.state.messages,
+    });
+    try {
+      connection.send(data); //send data to the server
+    } catch (error) {
+      console.log(error);
+    }
 
     await Audio.setAudioModeAsync({
       allowsRecordingIOS: false,
@@ -371,6 +330,7 @@ export default class Chat extends Component {
       playThroughEarpieceAndroid: false,
       staysActiveInBackground: true,
     });
+
     const { sound, status } = await this.recording.createNewLoadedSoundAsync(
       {
         isLooping: true,
@@ -381,6 +341,7 @@ export default class Chat extends Component {
       },
       this._updateScreenForSoundStatus
     );
+
     this.sound = sound;
 
     this.setState({
@@ -395,11 +356,6 @@ export default class Chat extends Component {
       const response = await Permissions.askAsync(Permissions.AUDIO_RECORDING);
       if (response.status === 'granted') {
         console.log(response.status);
-        this.setState({
-          audioState: {
-            haveRecordingPermissions: response.status === 'granted',
-          },
-        });
         return this._stopPlaybackAndBeginRecording();
       }
     }
@@ -414,85 +370,6 @@ export default class Chat extends Component {
       }
     }
   };
-
-  _trySetRate = async (rate, shouldCorrectPitch) => {
-    if (this.sound != null) {
-      try {
-        await this.sound.setRateAsync(rate, shouldCorrectPitch);
-      } catch (error) {
-        console.log(
-          "Rate changing could not be performed, possibly because the client's Android API is too old",
-          error
-        );
-      }
-    }
-  };
-
-  _onRateSliderSlidingComplete = async (value) => {
-    this._trySetRate(value * RATE_SCALE, this.state.shouldCorrectPitch);
-  };
-
-  _onSeekSliderValueChange = (value) => {
-    if (this.sound != null && !this.isSeeking) {
-      this.isSeeking = true;
-      this.shouldPlayAtEndOfSeek = this.state.audioState.shouldPlay;
-      this.sound.pauseAsync();
-    }
-  };
-
-  _onSeekSliderSlidingComplete = async (value) => {
-    if (this.sound != null) {
-      this.isSeeking = false;
-      const seekPosition = value * this.state.audioState.soundDuration;
-      if (this.shouldPlayAtEndOfSeek) {
-        this.sound.playFromPositionAsync(seekPosition);
-      } else {
-        this.sound.setPositionAsync(seekPosition);
-      }
-    }
-  };
-
-  _getSeekSliderPosition() {
-    if (
-      this.sound != null &&
-      this.state.audioState.soundPosition != null &&
-      this.state.audioState.soundDuration != null
-    ) {
-      return (
-        this.state.audioState.soundPosition /
-        this.state.audioState.soundDuration
-      );
-    }
-    return 0;
-  }
-
-  _getMMSSFromMillis(millis) {
-    const totalSeconds = millis / 1000;
-    const seconds = Math.floor(totalSeconds % 60);
-    const minutes = Math.floor(totalSeconds / 60);
-
-    const padWithZero = (number) => {
-      const string = number.toString();
-      if (number < 10) {
-        return '0' + string;
-      }
-      return string;
-    };
-    return padWithZero(minutes) + ':' + padWithZero(seconds);
-  }
-
-  _getPlaybackTimestamp() {
-    if (
-      this.sound != null &&
-      this.state.audioState.soundPosition != null &&
-      this.state.audioState.soundDuration != null
-    ) {
-      return `${this._getMMSSFromMillis(
-        this.state.audioState.soundPosition
-      )} / ${this._getMMSSFromMillis(this.state.audioState.soundDuration)}`;
-    }
-    return '';
-  }
 
   getPermissionAsync = async () => {
     if (Constants.platform.ios) {
@@ -593,6 +470,13 @@ export default class Chat extends Component {
         uri: result.uri,
         type: 'application/pdf',
       };
+      if (source.uri.split('.')[4] !== 'pdf') {
+        return this.setState({
+          showAlert: true,
+          showSuccessAlert: false,
+          alertmessage: 'Please select a pdf file!',
+        });
+      }
       console.log('picked doc', source);
       return this._handleDocument(source);
     }
@@ -777,7 +661,7 @@ export default class Chat extends Component {
 
       this.handleConvertData(dataResponse);
       this.setState({
-        showLoading: false,
+        showLoading: true,
         responseMessage: dataResponse,
       });
     } else {
@@ -792,6 +676,7 @@ export default class Chat extends Component {
   };
   handleConvertData = async (dataResponse) => {
     const { messages } = this.state;
+    this.setState({ showLoading: true });
 
     let userDetails = await getUserDetails();
     let userid = userDetails.data.id;
@@ -823,6 +708,13 @@ export default class Chat extends Component {
             fileName: data.fileName,
             time: newDate,
           });
+        } else if (data.messageType === 'audio') {
+          return messages.push({
+            direction: 'right',
+            messageType: 'audio',
+            audio: data.audio,
+            time: newDate,
+          });
         }
       } else {
         if (data.messageType === 'text') {
@@ -837,7 +729,7 @@ export default class Chat extends Component {
             direction: 'left',
             messageType: 'image',
             image: data.image,
-            time: newDate,
+            time: `${name}\n${newDate}`,
           });
         } else if (data.messageType === 'file') {
           return messages.push({
@@ -845,11 +737,19 @@ export default class Chat extends Component {
             messageType: 'file',
             file: data.file,
             fileName: data.fileName,
-            time: newDate,
+            time: `${name}\n${newDate}`,
+          });
+        } else if (data.messageType === 'audio') {
+          return messages.push({
+            direction: 'left',
+            messageType: 'audio',
+            audio: data.audio,
+            time: `${name}\n${newDate}`,
           });
         }
       }
     });
+    this.setState({ showLoading: false });
   };
   onMessageData = async (msg) => {
     const { messages, userid } = this.state;
@@ -909,7 +809,6 @@ export default class Chat extends Component {
     }).start();
   };
 
-  //This is to navigate back to the supportdesk
   handleBackPress = () => {
     return this.props.navigation.goBack();
   };
@@ -952,6 +851,15 @@ export default class Chat extends Component {
             time={message.time}
           />
         );
+      } else if (message.messageType === 'audio') {
+        newMessages.push(
+          <AudioBubble
+            key={index}
+            direction={message.direction}
+            uri={message.audio}
+            time={message.time}
+          />
+        );
       }
     });
     return (
@@ -977,7 +885,11 @@ export default class Chat extends Component {
             />
             <DisplayText
               styles={StyleSheet.flatten(styles.txtHeader)}
-              text={this.state.secondUsername}
+              text={
+                this.state.secondUsername.length > 12
+                  ? `${this.state.secondUsername.substring(0, 12)}...`
+                  : this.state.secondUsername
+              }
             />
             <TouchableOpacity onPress={this.checkDocPermission}>
               <Image
@@ -1055,44 +967,6 @@ export default class Chat extends Component {
               style={styles.messagesBubble}
             >
               {newMessages}
-              <View style={playerStyle.volumeContainer}>
-                <View style={playerStyle.playStopContainer}>
-                  <TouchableHighlight
-                    underlayColor={BACKGROUND_COLOR}
-                    style={playerStyle.wrapper}
-                    onPress={this._onPlayPausePressed}
-                    disabled={
-                      !this.state.isPlaybackAllowed || this.state.isLoading
-                    }
-                  >
-                    <Image
-                      style={playerStyle.image}
-                      source={
-                        this.state.audioState.isPlaying
-                          ? ICON_PAUSE_BUTTON.module
-                          : ICON_PLAY_BUTTON.module
-                      }
-                    />
-                  </TouchableHighlight>
-                </View>
-                <View style={playerStyle.playbackContainer}>
-                  <Slider
-                    style={playerStyle.playbackSlider}
-                    trackImage={ICON_TRACK_1.module}
-                    thumbImage={ICON_THUMB_1.module}
-                    value={this._getSeekSliderPosition()}
-                    onValueChange={this._onSeekSliderValueChange}
-                    onSlidingComplete={this._onSeekSliderSlidingComplete}
-                    disabled={
-                      !this.state.audioState.isPlaybackAllowed ||
-                      this.state.audioState.isLoading
-                    }
-                  />
-                  <Text style={[playerStyle.playbackTimestamp]}>
-                    {this._getPlaybackTimestamp()}
-                  </Text>
-                </View>
-              </View>
             </ScrollView>
             {/* <InputBar onSendPressed={() => this._sendMessage()}
           onSizeChange={() => this._onInputSizeChange()}
@@ -1139,6 +1013,12 @@ export default class Chat extends Component {
           visible={showLoading}
           title='Processing'
           message='Please wait...'
+        />
+        <ErrorAlert
+          title={'Error!'}
+          message={this.state.alertmessage}
+          handleCloseNotification={this.handleCloseNotification}
+          visible={this.state.showAlert}
         />
       </SafeAreaView>
     );
@@ -1350,6 +1230,151 @@ class FileBubble extends Component {
 }
 
 class AudioBubble extends Component {
+  constructor(props) {
+    super(props);
+    this.sound = null;
+    this.isSeeking = false;
+    this.shouldPlayAtEndOfSeek = false;
+
+    this.state = {
+      soundPosition: null,
+      soundDuration: null,
+      recordingDuration: null,
+      shouldPlay: false,
+      isPlaying: false,
+      shouldCorrectPitch: true,
+      isPlaybackAllowed: false,
+      // isLoading: false,
+    };
+  }
+
+  componentDidMount = async () => {
+    await Audio.setIsEnabledAsync(true);
+    const soundObject = new Audio.Sound();
+    const source = this.props.uri;
+    soundObject.setOnPlaybackStatusUpdate();
+    await soundObject.loadAsync({ uri: source });
+
+    try {
+      if (this.sound !== null) {
+        await this.sound.unloadAsync();
+        this.sound.setOnPlaybackStatusUpdate(null);
+        this.sound = null;
+      }
+      const { sound: soundObject, status } = await Audio.Sound.createAsync(
+        {
+          uri: source,
+        },
+        {
+          isLooping: true,
+          shouldCorrectPitch: this.state.shouldCorrectPitch,
+        },
+        this._updateScreenForSoundStatus
+      );
+      this.sound = soundObject;
+    } catch (error) {
+      console.log('error', error);
+    }
+  };
+
+  _updateScreenForSoundStatus = (status) => {
+    if (status.isLoaded) {
+      this.setState({
+        soundDuration: status.durationMillis,
+        soundPosition: status.positionMillis,
+        shouldPlay: status.shouldPlay,
+        isPlaying: status.isPlaying,
+        shouldCorrectPitch: status.shouldCorrectPitch,
+        isPlaybackAllowed: true,
+      });
+    } else {
+      this.setState({
+        soundDuration: null,
+        soundPosition: null,
+        isPlaybackAllowed: false,
+      });
+      if (status.error) {
+        console.log(`FATAL PLAYER ERROR: ${status.error}`);
+      }
+    }
+  };
+
+  _onPlayPausePressed = async () => {
+    console.log('play/pause');
+
+    try {
+      if (this.sound != null) {
+        if (this.state.isPlaying) {
+          return await this.sound.pauseAsync();
+        } else {
+          await this.sound.playAsync();
+          // return await this.sound.unloadAsync();
+        }
+      }
+    } catch (error) {
+      console.log('unable to play/pause sound', error);
+    }
+  };
+
+  _getMMSSFromMillis(millis) {
+    const totalSeconds = millis / 1000;
+    const seconds = Math.floor(totalSeconds % 60);
+    const minutes = Math.floor(totalSeconds / 60);
+
+    const padWithZero = (number) => {
+      const string = number.toString();
+      if (number < 10) {
+        return '0' + string;
+      }
+      return string;
+    };
+    return padWithZero(minutes) + ':' + padWithZero(seconds);
+  }
+
+  _getPlaybackTimestamp() {
+    if (
+      this.sound != null &&
+      this.state.soundPosition != null &&
+      this.state.soundDuration != null
+    ) {
+      return `${this._getMMSSFromMillis(
+        this.state.soundPosition
+      )} / ${this._getMMSSFromMillis(this.state.soundDuration)}`;
+    }
+    return '';
+  }
+
+  _onSeekSliderValueChange = (value) => {
+    if (this.sound != null && !this.isSeeking) {
+      this.isSeeking = true;
+      this.shouldPlayAtEndOfSeek = this.state.shouldPlay;
+      this.sound.pauseAsync();
+    }
+  };
+
+  _onSeekSliderSlidingComplete = async (value) => {
+    if (this.sound != null) {
+      this.isSeeking = false;
+      const seekPosition = value * this.state.soundDuration;
+      if (this.shouldPlayAtEndOfSeek) {
+        this.sound.playFromPositionAsync(seekPosition);
+      } else {
+        this.sound.setPositionAsync(seekPosition);
+      }
+    }
+  };
+
+  _getSeekSliderPosition() {
+    if (
+      this.sound != null &&
+      this.state.soundPosition != null &&
+      this.state.soundDuration != null
+    ) {
+      return this.state.soundPosition / this.state.soundDuration;
+    }
+    return 0;
+  }
+
   render() {
     //These spacers make the message bubble stay to the left or the right, depending on who is speaking, even if the message is multiple lines.
     let leftSpacer =
@@ -1382,15 +1407,11 @@ class AudioBubble extends Component {
             <TouchableHighlight
               style={playerStyle.wrapper}
               onPress={this._onPlayPausePressed}
-              // disabled={
-              //   !this.state.isPlaybackAllowed ||
-              //   this.state.audioState.isLoading
-              // }
             >
               <Image
                 style={playerStyle.image}
                 source={
-                  this.state.audioState.isPlaying
+                  this.state.isPlaying
                     ? ICON_PAUSE_BUTTON.module
                     : ICON_PLAY_BUTTON.module
                 }
@@ -1405,15 +1426,13 @@ class AudioBubble extends Component {
               value={this._getSeekSliderPosition()}
               onValueChange={this._onSeekSliderValueChange}
               onSlidingComplete={this._onSeekSliderSlidingComplete}
-              disabled={
-                !this.state.audioState.isPlaybackAllowed ||
-                this.state.audioState.isLoading
-              }
+              disabled={this.state.isLoading}
             />
             <Text style={[playerStyle.playbackTimestamp]}>
               {this._getPlaybackTimestamp()}
             </Text>
           </View>
+          <Text style={bubbleTextStyle}>{this.props.time}</Text>
         </View>
         {rightSpacer}
       </View>
@@ -1429,8 +1448,6 @@ const playerStyle = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'stretch',
     backgroundColor: BACKGROUND_COLOR,
-    // minHeight: DEVICE_HEIGHT,
-    // maxHeight: DEVICE_HEIGHT,
   },
   wrapper: {},
   halfScreenContainer: {
@@ -1439,8 +1456,6 @@ const playerStyle = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     alignSelf: 'stretch',
-    // minHeight: DEVICE_HEIGHT / 2.0,
-    // maxHeight: DEVICE_HEIGHT / 2.0,
   },
   playbackContainer: {
     flex: 1,
