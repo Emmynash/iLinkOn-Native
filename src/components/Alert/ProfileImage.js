@@ -8,6 +8,8 @@ import {
   Image,
   Modal,
   TouchableOpacity,
+  TouchableWithoutFeedback,
+  Dimensions,
 } from 'react-native';
 import colors from '../../assets/colors';
 import PropTypes from 'prop-types';
@@ -29,45 +31,36 @@ export default class ProfileImage extends Component {
     const { title, image, visible, positiveButton } = this.props;
     const posButton = positiveButton || 'Okay';
     return (
-      <View>
+      <TouchableWithoutFeedback onPress={this.closeNotification}>
         <Modal
           visible={visible}
           transparent={true}
           animationType={'fade'}
           onRequestClose={this.closeNotification}
         >
-          <View
+          <View style={styles.MainContainer}>
+            <TouchableOpacity
+              onPress={this.closeNotification}
+              activeOpacity={0.2}
+            >
+              <Text onPress={this.closeNotification} style={styles.TextStyle}>
+                {'close'}
+              </Text>
+            </TouchableOpacity>
+            {/* <View
             style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
-          >
-            <View style={styles.Alert_Main_View}>
+          > */}
+            <View>
               <Image
                 source={{ uri: image }}
                 style={StyleSheet.flatten(styles.profileIcon)}
               />
               <Text style={styles.Alert_Message}>{title}</Text>
-              <View
-                style={{
-                  width: '100%',
-                  alignItems: 'flex-end',
-                }}
-              >
-                <TouchableOpacity
-                  style={styles.buttonStyle}
-                  onPress={this.closeNotification}
-                  activeOpacity={0.2}
-                >
-                  <Text
-                    onPress={this.closeNotification}
-                    style={styles.TextStyle}
-                  >
-                    {posButton}
-                  </Text>
-                </TouchableOpacity>
-              </View>
             </View>
+            {/* </View> */}
           </View>
         </Modal>
-      </View>
+      </TouchableWithoutFeedback>
     );
   }
 }
@@ -82,7 +75,10 @@ const styles = StyleSheet.create({
   MainContainer: {
     justifyContent: 'center',
     alignItems: 'center',
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,.476)',
     marginTop: Platform.OS == 'ios' ? 20 : 0,
+    width: Dimensions.get('window').width,
   },
   Alert_Main_View: {
     // alignItems: 'center',
@@ -99,8 +95,14 @@ const styles = StyleSheet.create({
   },
   profileIcon: {
     width: 280,
-    height: 200,
-    borderRadius: 0,
+    height: 240,
+    borderRadius: 5,
+  },
+
+  TextStyle: {
+    color: 'red',
+    fontWeight: 'bold',
+    fontSize: 30,
   },
 
   Alert_Title: {
@@ -113,7 +115,7 @@ const styles = StyleSheet.create({
   },
   Alert_Message: {
     fontSize: theme.SmallFont,
-    color: colors.itemColor,
+    color: colors.white,
     marginTop: 8,
     marginLeft: 18,
     fontFamily: theme.LightFont,
