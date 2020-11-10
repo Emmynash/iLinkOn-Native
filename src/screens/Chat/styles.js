@@ -7,11 +7,13 @@ export default styles = StyleSheet.create({
     backgroundColor: '#dcdcdc',
   },
   inputContainer: {
+    padding: 4,
     flex: 1,
   },
   navBar: {
     flexDirection: 'row',
-    paddingTop: Platform.OS === 'ios' ? 8 : StatusBar.currentHeight,
+    marginTop: Platform.OS === 'ios' ? 8 : StatusBar.currentHeight,
+    padding: 10,
     height: Platform.OS === 'ios' ? 50 : 64,
     width: '100%',
     alignItems: 'center',
@@ -173,7 +175,7 @@ export default styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingVertical: 5,
     alignItems: 'center',
     backgroundColor: colors.white,
     elevation: 2,
@@ -192,7 +194,7 @@ export default styles = StyleSheet.create({
     // height: 35,
     fontSize: 16,
     paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingVertical: 8,
     alignItems: 'center',
     width: '75%',
     backgroundColor: colors.whiteGray,
@@ -217,7 +219,7 @@ export default styles = StyleSheet.create({
     width: 20,
   },
   cameraIcon: {
-    marginLeft: 10,
+    padding: 5,
     resizeMode: 'contain',
     height: 25,
     width: 25,
@@ -226,6 +228,7 @@ export default styles = StyleSheet.create({
     resizeMode: 'contain',
     height: 30,
     width: 30,
+    padding: 5,
   },
   AttachIcon: {
     marginLeft: 100,
@@ -256,6 +259,7 @@ export default styles = StyleSheet.create({
     color: colors.white,
     fontSize: 16,
     fontFamily: theme.LightFont,
+    marginTop: Platform.OS === 'ios' ? 15 : 0,
   },
 
   messageBubbleRight: {
@@ -273,5 +277,6 @@ export default styles = StyleSheet.create({
     color: theme.primaryColor,
     fontSize: 16,
     fontFamily: theme.LightFont,
+    marginTop: Platform.OS === 'ios' ? 15 : 0,
   },
 });
