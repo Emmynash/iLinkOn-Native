@@ -91,7 +91,7 @@ export default class ImageModal extends Component {
           return this.setState({
             showErrorAlert: true,
             showSuccessAlert: false,
-            message: 'File could not be saved, check your network!',
+            message: 'Image could not be saved, check your network!',
           });
         }
         return this.saveFile(uri);
