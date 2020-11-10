@@ -1,6 +1,13 @@
 'use strict';
 import React, { useState, useEffect } from 'react';
-import { View, Image, StyleSheet, StatusBar, TouchableOpacity, FlatList } from 'react-native';
+import {
+  View,
+  Image,
+  StyleSheet,
+  StatusBar,
+  TouchableOpacity,
+  FlatList,
+} from 'react-native';
 import { useNavigation } from 'react-navigation-hooks';
 import { SubmitButton, ErrorAlert, DisplayText } from '../../components';
 import styles from './styles';
@@ -13,7 +20,7 @@ const Notification = ({ navigation }) => {
     [data, setData] = useState([]),
     [showAlert, setShowAlert] = useState({
       showAlert: false,
-      message: ''
+      message: '',
     });
 
   useEffect(() => {
@@ -24,9 +31,8 @@ const Notification = ({ navigation }) => {
     let profile = await getProfile();
     let expoToken = await getExpoToken();
     let token = profile.access_token;
-    await postToken(expoToken, token)
+    await postToken(expoToken, token);
   };
-
 
   const toggleDrawers = async () => {
     await navigation.toggleDrawer();
@@ -45,24 +51,24 @@ const Notification = ({ navigation }) => {
   const postToken = async (expoToken, token) => {
     showLoadingDialogue();
     const body = JSON.stringify({
-      'token': expoToken,
+      token: expoToken,
     });
     const settings = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `${token}`
+        Authorization: `${token}`,
       },
       body: body,
     };
     const response = await fetch(NotificationEndpoint, settings);
     const res = await response.json();
-    console.log('hehehehe check status', settings);
+    console.log('check status', settings);
     if (res.meta.status >= 300) {
       hideLoadingDialogue();
       setShowAlert({
         showAlert: true,
-        message: res.meta.message
+        message: res.meta.message,
       });
     } else if (res.meta.status == 200 && res.meta.status < 300) {
       hideLoadingDialogue();
@@ -72,7 +78,7 @@ const Notification = ({ navigation }) => {
         hideLoadingDialogue();
         setShowAlert({
           showAlert: true,
-          message: res.meta.message
+          message: res.meta.message,
         });
         hideLoadingDialogue();
       }
@@ -94,9 +100,7 @@ const Notification = ({ navigation }) => {
           styles={StyleSheet.flatten(styles.headerTxt)}
           text={'Notification'}
         />
-        <TouchableOpacity style={styles.headerView}>
-
-        </TouchableOpacity>
+        <TouchableOpacity style={styles.headerView}></TouchableOpacity>
       </View>
       {/* <FlatList
         //data={data}          
@@ -120,7 +124,7 @@ const Notification = ({ navigation }) => {
         visible={showAlert.showAlert}
       />
     </View>
-  )
+  );
 };
 
 export default Notification;
