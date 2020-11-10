@@ -17,13 +17,15 @@ import {
   Dimensions,
   UIManager,
   Slider,
+  Platform,
+  Span,
 } from 'react-native';
 import KeyboardSpacer from 'react-native-keyboard-spacer';
 import Constants from 'expo-constants';
 import * as ImagePicker from 'expo-image-picker';
 import * as Permissions from 'expo-permissions';
 import * as DocumentPicker from 'expo-document-picker';
-import { Audio, AVPlaybackStatus } from 'expo-av';
+import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
 import { ProgressDialog } from 'react-native-simple-dialogs';
 import styles from './styles';
@@ -39,8 +41,6 @@ import {
   getProfile,
 } from '../Utils/Utils';
 import moment from 'moment';
-import base64 from 'react-native-base64';
-import Expo from 'expo';
 import { Asset } from 'expo-asset';
 
 const { State: TextInputState } = TextInput;
@@ -126,12 +126,8 @@ export default class Chat extends Component {
         rate: 1.0,
       },
     };
-
-    // this.recordingSettings = Audio.RECORDING_OPTIONS_PRESET_LOW_QUALITY;
-    this.recordingSettings = JSON.parse(
-      JSON.stringify(Audio.RECORDING_OPTIONS_PRESET_LOW_QUALITY)
-    );
   }
+
   //fun keyboard stuff- we use these to get the end of the ScrollView to "follow" the top of the InputBar as the keyboard rises and falls
   async UNSAFE_componentWillMount() {
     this.keyboardDidShowSub = Keyboard.addListener(
@@ -148,7 +144,34 @@ export default class Chat extends Component {
     this.mounted = false;
     this.keyboardDidShowSub.remove();
     this.keyboardDidHideSub.remove();
-    this.state.connection.close();
+
+    let profile = await getProfile();
+    const token = profile.access_token;
+    var endpoint = `wss://ilinkon.herokuapp.com/?token=${token}`;
+
+    let that = this;
+    let connectInterval;
+
+    var connection = new WebSocket(endpoint);
+
+    connection.onopen = () => {
+      this.setState({ connection: connection });
+      that.timeout = 10000; // reset timer to 100 on open of websocket
+      clearTimeout(connectInterval); // clear Interval onOpen of websocket
+    };
+    connection.onmessage = (e) => {
+      // console.log('i am here', e.data)
+      const messageResponse = JSON.parse(e.data);
+      this.onMessageData(messageResponse);
+
+      console.log(messageResponse);
+    };
+
+    connection.onerror = (err) => {
+      console.log('WebSocket encountered error: ', err, 'Closing socket');
+      connection.onopen();
+    };
+
     await this.handleGetAllMessage();
   }
 
@@ -261,15 +284,22 @@ export default class Chat extends Component {
       shouldDuckAndroid: true,
       interruptionModeAndroid: Audio.INTERRUPTION_MODE_ANDROID_DO_NOT_MIX,
       playThroughEarpieceAndroid: false,
-      staysActiveInBackground: true,
+      staysActiveInBackground: false,
     });
     if (this.recording !== null) {
       this.recording.setOnRecordingStatusUpdate(null);
       this.recording = null;
     }
 
+    let recordOptions = Audio.RECORDING_OPTIONS_PRESET_LOW_QUALITY;
+    recordOptions.ios.extension = '.m4a';
+    recordOptions.android.extension = '.m4a';
+    recordOptions.ios.outputFormat =
+      Audio.RECORDING_OPTION_IOS_OUTPUT_FORMAT_MPEG4AAC;
+    recordOptions = JSON.parse(JSON.stringify(recordOptions));
+
     const recording = new Audio.Recording();
-    await recording.prepareToRecordAsync(this.recordingSettings);
+    await recording.prepareToRecordAsync(recordOptions);
     recording.setOnRecordingStatusUpdate(this._updateScreenForRecordingStatus);
 
     this.recording = recording;
@@ -297,28 +327,50 @@ export default class Chat extends Component {
       name: info.uri.split('-')[5],
       size: info.size,
       uri: info.uri,
-      type: 'audio/mpeg',
+      type: 'audio/m4a',
     };
 
-    const { threadId, connection, messages } = this.state;
-    messages.push({
-      direction: 'right',
-      audio: source.uri,
-      messageType: 'audio',
-    });
-    let data = JSON.stringify({
-      threadId: threadId,
-      audio: source.uri,
-      messageType: 'audio',
-    });
-    this.setState({
-      messages: this.state.messages,
-    });
-    try {
-      connection.send(data); //send data to the server
-    } catch (error) {
-      console.log(error);
-    }
+    var formdata = new FormData();
+
+    formdata.append('file', source);
+    formdata.append('cloud_name', 'https-cyberve-com');
+    formdata.append('upload_preset', 'kvdcspfl');
+
+    fetch('http://api.cloudinary.com/v1_1/https-cyberve-com/auto/upload', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'multipart/form-data',
+      },
+      body: formdata,
+    })
+      .then(async (res) => {
+        let json = await res.json();
+        console.log(JSON.stringify(json.secure_url));
+        const { threadId, connection, messages } = this.state;
+        let time = moment().utcOffset('+01:00').format('hh:mm:a');
+        messages.push({
+          direction: 'right',
+          audio: json.secure_url,
+          messageType: 'audio',
+          time,
+        });
+        let data = JSON.stringify({
+          threadId: threadId,
+          audio: json.secure_url,
+          messageType: 'audio',
+        });
+
+        this.setState({
+          messages: this.state.messages,
+        });
+        try {
+          connection.send(data); //send data to the server
+        } catch (error) {
+          console.log(error);
+        }
+      })
+      .catch((err) => console.log('error', err));
 
     await Audio.setAudioModeAsync({
       allowsRecordingIOS: false,
@@ -328,7 +380,7 @@ export default class Chat extends Component {
       shouldDuckAndroid: true,
       interruptionModeAndroid: Audio.INTERRUPTION_MODE_ANDROID_DO_NOT_MIX,
       playThroughEarpieceAndroid: false,
-      staysActiveInBackground: true,
+      staysActiveInBackground: false,
     });
 
     const { sound, status } = await this.recording.createNewLoadedSoundAsync(
@@ -388,7 +440,7 @@ export default class Chat extends Component {
   pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       allowsEditing: true,
-      aspect: [4, 3],
+      aspect: [4, 5],
       base64: true,
     });
 
@@ -411,20 +463,20 @@ export default class Chat extends Component {
     })
       .then(async (res) => {
         const data = await res.json();
-        console.log(data);
-        this.setState({ image: data.url });
+        console.log(data.secure_url);
+        this.setState({ image: data.secure_url });
 
         const { threadId, connection, messages } = this.state;
         let time = moment().utcOffset('+01:00').format('hh:mm:a');
         messages.push({
           direction: 'right',
-          image: data.url,
+          image: data.secure_url,
           messageType: 'image',
           time,
         });
         let msg = JSON.stringify({
           threadId: threadId,
-          image: data.url,
+          image: data.secure_url,
           messageType: 'image',
         });
         this.setState({
@@ -581,13 +633,15 @@ export default class Chat extends Component {
     // websocket onopen event listener
     connection.onopen = () => {
       this.setState({ connection: connection });
-      that.timeout = 250; // reset timer to 250 on open of websocket
+      that.timeout = 60000; // reset timer to 250 on open of websocket
       clearTimeout(connectInterval); // clear Interval onOpen of websocket
     };
     connection.onmessage = (e) => {
       // console.log('i am here', e.data)
       const messageResponse = JSON.parse(e.data);
       this.onMessageData(messageResponse);
+
+      console.log(messageResponse);
     };
 
     // websocket onclose event listener
@@ -598,9 +652,8 @@ export default class Chat extends Component {
 
     // websocket onerror event listener
     connection.onerror = (err) => {
-      console.log();
-      'WebSocket encountered error: ', err, 'Closing socket';
-      connection.close();
+      // console.log('WebSocket encountered error: ', err, 'Closing socket');
+      connection.onopen();
     };
   };
 
@@ -609,8 +662,9 @@ export default class Chat extends Component {
    */
   check = () => {
     const { connection } = this.state;
-    if (!connection || connection.readyState == WebSocket.CLOSED)
-      this.connect();
+    if (!connection || connection.readyState == WebSocket.CLOSED) {
+      return this.connect();
+    }
   };
 
   _sendMessage = () => {
@@ -631,7 +685,7 @@ export default class Chat extends Component {
     try {
       connection.send(data); //send data to the server
     } catch (error) {
-      console.log(error);
+      console.log('Could not send message', error);
     }
   };
 
@@ -761,14 +815,67 @@ export default class Chat extends Component {
     try {
       if (sender_id === userid) {
         let sender = `${msg.message.text}\n${newDate}`;
-        messages.push({ direction: 'right', text: sender });
+        if (msg.message.messageType === 'text') {
+          return messages.push({
+            direction: 'right',
+            text: sender,
+            messageType: 'text',
+          });
+        } else if (msg.message.messageType === 'image') {
+          return messages.push({
+            direction: 'right',
+            image: msg.message.image,
+            messageType: 'image',
+            time: newDate,
+          });
+        } else if (msg.message.messageType === 'file') {
+          return messages.push({
+            direction: 'right',
+            file: msg.message.file,
+            messageType: 'file',
+            time: newDate,
+            fileName: msg.message.fileName,
+          });
+        } else if (msg.message.messageType === 'audio') {
+          return messages.push({
+            direction: 'right',
+            audio: msg.message.audio,
+            messageType: 'audio',
+            time: newDate,
+          });
+        }
       } else if (sender_id !== userid) {
         let receiver = `${msg.message.text}\n${newDate}\n${sendersName}`;
-        return messages.push({
-          direction: 'left',
-          text: receiver,
-          senderId: sender_id,
-        });
+        if (msg.message.messageType === 'text') {
+          return messages.push({
+            direction: 'left',
+            text: receiver,
+            senderId: sender_id,
+            messageType: 'text',
+          });
+        } else if (msg.message.messageType === 'image') {
+          return messages.push({
+            direction: 'left',
+            image: msg.message.image,
+            messageType: 'image',
+            time: `${sendersName}\n${newDate}`,
+          });
+        } else if (msg.message.messageType === 'file') {
+          return messages.push({
+            direction: 'left',
+            file: msg.message.file,
+            messageType: 'file',
+            time: `${sendersName}\n${newDate}`,
+            fileName: msg.message.fileName,
+          });
+        } else if (msg.message.messageType === 'audio') {
+          return messages.push({
+            direction: 'left',
+            audio: msg.message.audio,
+            messageType: 'audio',
+            time: `${sendersName}\n${newDate}`,
+          });
+        }
       }
     } catch (error) {}
   };
@@ -852,6 +959,7 @@ export default class Chat extends Component {
           />
         );
       } else if (message.messageType === 'audio') {
+        // console.log(message.audio);
         newMessages.push(
           <AudioBubble
             key={index}
@@ -885,24 +993,31 @@ export default class Chat extends Component {
             />
             <DisplayText
               styles={StyleSheet.flatten(styles.txtHeader)}
+              numberOfLines={1}
               text={
                 this.state.secondUsername.length > 12
-                  ? `${this.state.secondUsername.substring(0, 12)}...`
+                  ? `${
+                      Constants.platform.ios
+                        ? `${this.state.secondUsername.substring(0, 12)}`
+                        : ` ${this.state.secondUsername.substring(0, 8)}`
+                    }...`
                   : this.state.secondUsername
               }
             />
-            <TouchableOpacity onPress={this.checkDocPermission}>
-              <Image
-                source={require('../../assets/images/paper-clip.png')}
-                style={styles.AttachIcon}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={this.getPermissionAsync}>
-              <Image
-                source={require('../../assets/images/camera_1.png')}
-                style={styles.cameraIcon}
-              />
-            </TouchableOpacity>
+            <>
+              <TouchableOpacity onPress={this.checkDocPermission}>
+                <Image
+                  source={require('../../assets/images/paper-clip.png')}
+                  style={styles.AttachIcon}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={this.getPermissionAsync}>
+                <Image
+                  source={require('../../assets/images/camera_1.png')}
+                  style={styles.cameraIcon}
+                />
+              </TouchableOpacity>
+            </>
           </View>
         </View>
         {Platform.OS === 'ios' ? (
@@ -1124,7 +1239,9 @@ class ImageBubble extends Component {
                 uri: this.props.image,
               }}
             />
-            <Text style={bubbleTextStyle}>{this.props.time}</Text>
+            <View style={bubbleTextStyle}>
+              <Text>{this.props.time}</Text>
+            </View>
           </TouchableOpacity>
         </View>
         <ImageModal
@@ -1252,8 +1369,9 @@ class AudioBubble extends Component {
     await Audio.setIsEnabledAsync(true);
     const soundObject = new Audio.Sound();
     const source = this.props.uri;
+    const changeExt = source.substr(0, source.lastIndexOf('.')) + '.m4a';
     soundObject.setOnPlaybackStatusUpdate();
-    await soundObject.loadAsync({ uri: source });
+    await soundObject.loadAsync({ uri: changeExt });
 
     try {
       if (this.sound !== null) {
@@ -1263,7 +1381,7 @@ class AudioBubble extends Component {
       }
       const { sound: soundObject, status } = await Audio.Sound.createAsync(
         {
-          uri: source,
+          uri: changeExt,
         },
         {
           isLooping: true,
@@ -1432,7 +1550,10 @@ class AudioBubble extends Component {
               {this._getPlaybackTimestamp()}
             </Text>
           </View>
-          <Text style={bubbleTextStyle}>{this.props.time}</Text>
+          <></>
+          <View style={bubbleTextStyle}>
+            <Text>{this.props.time}</Text>
+          </View>
         </View>
         {rightSpacer}
       </View>
