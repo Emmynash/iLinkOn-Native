@@ -102,7 +102,6 @@ function DashBoard({ navigation }) {
     let token = profile.access_token;
     let expoToken = await getExpoToken();
     if (expoToken) {
-      // let expoNotifyToken = expoToken.split('[')[1].split(']')[0]
       let expoNotifyToken = expoToken;
       return postToken(expoNotifyToken, token);
     }
@@ -123,7 +122,7 @@ function DashBoard({ navigation }) {
 
     const response = await fetch(NotificationEndpoint, settings);
     const res = await response.json();
-    console.log('resssssponseeeee', res);
+    console.log('ExpoToken Response', res);
     if (res.meta.status > 300) {
       hideLoadingDialogue();
       setShowAlert({
