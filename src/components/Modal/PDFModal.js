@@ -11,13 +11,15 @@ import {
   Image,
   StatusBar,
 } from 'react-native';
-import colors from '../../assets/colors';
-import theme from '../../assets/theme';
 import PropTypes from 'prop-types';
 import PDFReader from 'rn-pdf-reader-js';
 import * as FileSystem from 'expo-file-system';
 import * as Permissions from 'expo-permissions';
 import * as MediaLibrary from 'expo-media-library';
+import { ProgressDialog } from 'react-native-simple-dialogs';
+import * as Sharing from 'expo-sharing';
+import colors from '../../assets/colors';
+import theme from '../../assets/theme';
 import { ErrorAlert, SuccessAlert } from '../../components';
 
 class PDFModal extends Component {
@@ -25,8 +27,9 @@ class PDFModal extends Component {
     super(props);
     this.state = {
       modalVisible: false,
-      showAlert: false,
+      showErrorAlert: false,
       showSuccessAlert: false,
+      showLoading: false,
       message: '',
     };
     this.closeNotification = this.closeNotification.bind(this);
@@ -39,29 +42,83 @@ class PDFModal extends Component {
 
   handleCloseNotification = () => {
     return this.setState({
-      showAlert: false,
+      showErrorAlert: false,
       showSuccessAlert: false,
     });
   };
 
+  showLoadingDialogue = () => {
+    this.setState({
+      showLoading: true,
+    });
+  };
+  // Hide Loading Spinner
+  hideLoadingDialogue = () => {
+    this.setState({
+      showLoading: false,
+    });
+  };
+
   _downloadPdf = async () => {
+    this.showLoadingDialogue();
     const uri = this.props.uri;
     let fileUri = FileSystem.documentDirectory + uri.split('/')[7];
-    FileSystem.downloadAsync(uri, fileUri)
-      .then(({ uri }) => {
-        if (uri === '' || undefined || null) {
+    console.log(fileUri);
+
+    if (Platform.OS === 'ios') {
+      if (!(await Sharing.isAvailableAsync())) {
+        this.hideLoadingDialogue();
+        return this.setState({
+          showErrorAlert: true,
+          showSuccessAlert: false,
+          message: "Uh oh, sharing isn't available on your platform",
+        });
+      }
+      this.hideLoadingDialogue();
+      return await Sharing.shareAsync(fileUri);
+    } else {
+      const timeout = (time, promise) => {
+        return new Promise(function (resolve, reject) {
+          setTimeout(() => {
+            reject(console.log('Request timed out.'));
+          }, time);
+          promise.then(resolve, reject);
+        }).catch((error) => {
+          console.log(error);
+          this.hideLoadingDialogue();
           return this.setState({
-            showAlert: true,
+            showErrorAlert: true,
             showSuccessAlert: false,
-            message: 'File could not be saved, check yourr network!',
+            message: 'File could not be saved, check your network!',
           });
-        }
-        this.saveFile(uri);
-        console.log(uri);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+        });
+      };
+      const controller = new AbortController();
+
+      timeout(60000, FileSystem.downloadAsync(uri, fileUri))
+        .then(({ uri }) => {
+          if (uri == undefined || null || '') {
+            this.hideLoadingDialogue();
+            return this.setState({
+              showErrorAlert: true,
+              showSuccessAlert: false,
+              message: 'File could not be saved, check your network!',
+            });
+          }
+          console.log(uri);
+          return this.saveFile(uri);
+        })
+        .catch((error) => {
+          console.error(error);
+          this.hideLoadingDialogue();
+          this.setState({
+            showErrorAlert: true,
+            showSuccessAlert: false,
+            message: 'File could not be saved, check your network!',
+          });
+          controller.abort();
+        });
+    }
   };
 
   saveFile = async (fileUri) => {
@@ -69,16 +126,22 @@ class PDFModal extends Component {
     if (status === 'granted') {
       const asset = await MediaLibrary.createAssetAsync(fileUri);
       await MediaLibrary.createAlbumAsync('Download', asset, false);
+      this.hideLoadingDialogue();
       return this.setState({
-        showAlert: true,
-        showSuccessAlert: false,
+        showErrorAlert: false,
+        showSuccessAlert: true,
         message: 'File successfully saved!',
       });
     }
   };
   render() {
     const { visible, modalStyle } = this.props;
-    const { message, showAlert } = this.state;
+    const {
+      message,
+      showErrorAlert,
+      showLoading,
+      showSuccessAlert,
+    } = this.state;
     const style = modalStyle || styles.modalCont;
     return (
       <TouchableWithoutFeedback onPress={this.closeNotification}>
@@ -119,17 +182,22 @@ class PDFModal extends Component {
               }}
             />
           </View>
+          <ProgressDialog
+            visible={showLoading}
+            title='Processing'
+            message='Please wait...'
+          />
           <ErrorAlert
             title={'Error!'}
             message={message}
             handleCloseNotification={this.handleCloseNotification}
-            visible={showAlert}
+            visible={showErrorAlert}
           />
           <SuccessAlert
             title={'Awesome!'}
             message={message}
             handleCloseNotification={this.handleCloseNotification}
-            visible={showAlert}
+            visible={showSuccessAlert}
           />
         </Modal>
       </TouchableWithoutFeedback>
@@ -164,13 +232,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerIcon: {
-    height: 18,
-    width: 18,
+    height: Platform.OS === 'ios' ? 25 : 18,
+    width: Platform.OS === 'ios' ? 25 : 18,
     tintColor: colors.blacks,
   },
   downloadIcon: {
-    height: 25,
-    width: 25,
+    height: Platform.OS === 'ios' ? 28 : 25,
+    width: Platform.OS === 'ios' ? 28 : 25,
     tintColor: colors.black,
     justifyContent: 'flex-end',
     alignItems: 'center',
@@ -178,8 +246,8 @@ const styles = StyleSheet.create({
   },
   navBar: {
     flexDirection: 'row',
-    paddingTop: Platform.OS === 'ios' ? 8 : StatusBar.currentHeight,
-    height: Platform.OS === 'ios' ? 50 : 64,
+    paddingTop: Platform.OS === 'ios' ? 12 : StatusBar.currentHeight,
+    height: Platform.OS === 'ios' ? 64 : 64,
     width: '100%',
     alignItems: 'center',
     backgroundColor: theme.colorAccent,
@@ -189,7 +257,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 2.26,
     alignContent: 'space-between',
-    marginTop: Platform.OS === 'ios' ? 0 : -20,
+    marginTop: Platform.OS === 'ios' ? 25 : -20,
   },
 });
 
