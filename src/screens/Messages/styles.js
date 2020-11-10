@@ -22,18 +22,20 @@ let styles = StyleSheet.create({
   },
   searchView: {
     height: Platform.OS === 'ios' ? 50 : 60,
+    marginTop: Platform.OS === 'ios' ? 8 : StatusBar.currentHeight,
+    padding: 15,
     width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
     backgroundColor: theme.colorAccent,
     paddingVertical: Platform.OS === 'ios' ? 8 : StatusBar.currentHeight,
     paddingHorizontal: 20,
-    alignItems: 'center'
+    alignItems: 'center',
   },
   searchIcon: {
     width: 20,
     height: 20,
-    tintColor: theme.textGray
+    tintColor: theme.textGray,
   },
   userHeader: {
     width: '100%',
@@ -48,7 +50,7 @@ let styles = StyleSheet.create({
     fontFamily: theme.LightFont,
     fontSize: theme.MediumFont,
     color: theme.primaryColor,
-    marginLeft: 20
+    marginLeft: 20,
   },
 
   wrapper: {
@@ -66,29 +68,29 @@ let styles = StyleSheet.create({
     width: '100%',
   },
   pushNotification: {
-    width: '100%'
+    width: '100%',
   },
   profileContainer: {
     flexDirection: 'row',
     width: '100%',
     // justifyContent: 'center',
-    paddingTop: 10
+    paddingTop: 10,
   },
   pushTxt: {
     fontFamily: theme.LightFont,
     fontSize: theme.MediumFont,
     color: theme.primaryColor,
-    marginTop: 20
+    marginTop: 20,
   },
   userProfileText: {
     fontFamily: theme.headerFont,
     fontSize: theme.XlargeFont,
     color: theme.lightTextGRay,
-    marginTop: 16
+    marginTop: 16,
   },
   editProText: {
     // color: theme.lightTextGRay,
-    padding: 5
+    padding: 5,
   },
 
   cardView: {
@@ -105,7 +107,7 @@ let styles = StyleSheet.create({
     marginTop: 8,
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16
+    paddingHorizontal: 16,
   },
   cardView2: {
     flexDirection: 'row',
@@ -121,7 +123,7 @@ let styles = StyleSheet.create({
     marginTop: 1,
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16
+    paddingHorizontal: 16,
   },
   holder: {
     paddingHorizontal: 20,
@@ -132,17 +134,17 @@ let styles = StyleSheet.create({
   headerView: {
     overflow: 'hidden',
     flexDirection: 'row',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   profileIcon: {
     width: 40,
     height: 40,
-    borderRadius: 20
+    borderRadius: 20,
   },
   playIcon: {
     width: 13,
     height: 18,
-    tintColor: theme.primaryTextColor
+    tintColor: theme.primaryTextColor,
   },
   name: {
     fontFamily: theme.LightFont,
@@ -175,8 +177,7 @@ let styles = StyleSheet.create({
     paddingLeft: 8,
     alignItems: 'center',
     borderRadius: 20,
-    marginLeft: 14
-
+    marginLeft: 14,
   },
 });
 
