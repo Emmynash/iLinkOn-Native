@@ -5,8 +5,7 @@ import * as Permissions from 'expo-permissions';
 import Constants from 'expo-constants';
 import colors from '../../assets/colors';
 import theme from '../../assets/theme';
-import { Dropdown } from 'react-native-material-dropdown';
-import { Button, Platform } from 'react-native';
+import { Platform } from 'react-native';
 import moment from 'moment';
 import { useNavigation } from 'react-navigation-hooks';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
@@ -32,7 +31,7 @@ import {
   saveProfileImage,
   getUserDetails,
   getProfile,
-  CreateEventEndpoint
+  CreateEventEndpoint,
 } from '../Utils/Utils';
 import {
   DisplayText,
@@ -40,7 +39,7 @@ import {
   InputField,
   SubmitButton,
   CustomModal,
-  SuccessAlert
+  SuccessAlert,
 } from '../../components';
 
 function CreateEvent({ navigation }) {
@@ -50,27 +49,27 @@ function CreateEvent({ navigation }) {
     [time, setTime] = useState(''),
     [eventName, setEventName] = useState({
       eventName: '',
-      isEventNameValid: false
+      isEventNameValid: false,
     }),
     [eventDescription, setEventDescription] = useState({
       eventDescription: '',
-      isEventDescriptionValid: false
+      isEventDescriptionValid: false,
     }),
     [eventLocation, setEventLocation] = useState({
       eventLocation: '',
-      isEventLocationValid: false
+      isEventLocationValid: false,
     }),
     [showLoading, setShowLoading] = useState(false),
     [showAlert, setShowAlert] = useState({
       showAlert: false,
       showSuccessAlert: false,
-      message: ''
+      message: '',
     }),
     [profileImage, setProfileImage] = useState(null),
     [token, setToken] = useState(''),
     [isDatePickerVisible, setDatePickerVisibility] = useState(false),
     [isEndDatePickerVisible, setEndDatePickerVisibility] = useState(false),
-    [currentDate, setCurrentDate] = useState('')
+    [currentDate, setCurrentDate] = useState('');
   const { navigate, goBack } = useNavigation();
 
   useEffect(() => {
@@ -78,11 +77,9 @@ function CreateEvent({ navigation }) {
   }, []);
   // Getting curren date and time
   useEffect(() => {
-    var date = moment()
-      .utcOffset('+01:00')
-      .toISOString();
-    setCurrentDate(date)
-  }, [])
+    var date = moment().utcOffset('+01:00').toISOString();
+    setCurrentDate(date);
+  }, []);
 
   const checkToken = async () => {
     const eventId = navigation.getParam('groupId');
@@ -90,8 +87,8 @@ function CreateEvent({ navigation }) {
       token = profile.access_token;
     setToken(token);
     setGroupId(eventId);
-    return setGroupId(eventId)
-  }
+    return setGroupId(eventId);
+  };
 
   const showDatePicker = () => {
     setDatePickerVisibility(true);
@@ -113,7 +110,7 @@ function CreateEvent({ navigation }) {
   const hideTimePicker = () => {
     setTimePickerVisible(false);
   };
-  const handleConfirm = date => {
+  const handleConfirm = (date) => {
     let dates = moment(date).toISOString();
     if (dates > currentDate) {
       console.log('A date has been picked: ', dates);
@@ -125,20 +122,19 @@ function CreateEvent({ navigation }) {
     // setDate(date);
   };
 
-  const handleEndDateConfirm = endDate => {
-    let dates = moment(endDate).toISOString()
+  const handleEndDateConfirm = (endDate) => {
+    let dates = moment(endDate).toISOString();
 
-    let eventDate = date
+    let eventDate = date;
     var isafter = moment(dates).isAfter(eventDate);
     if (isafter) {
       setEndDate(dates);
       hideEndDatePicker();
       console.log('A date has been picked: ', eventDate);
-    }
-    else {
-      hideEndDatePicker()
-      setEndDate(null)
-      console.log('A bad date: ', dates)
+    } else {
+      hideEndDatePicker();
+      setEndDate(null);
+      console.log('A bad date: ', dates);
     }
     // console.warn('A date has been picked: ', dates)
     // setEndDate(dates)
@@ -147,7 +143,7 @@ function CreateEvent({ navigation }) {
   const handleCloseNotification = () => {
     return setShowAlert({
       showAlert: false,
-      showSuccessAlert: false
+      showSuccessAlert: false,
     });
   };
   const getPermissionAsync = async () => {
@@ -169,40 +165,43 @@ function CreateEvent({ navigation }) {
     let result = await ImagePicker.launchImageLibraryAsync({
       allowsEditing: true,
       aspect: [4, 3],
-      base64: true
+      base64: true,
     });
 
     if (!result.cancelled) {
-      let base64Img = `data:image/jpg;base64,${result.base64}`
+      let base64Img = `data:image/jpg;base64,${result.base64}`;
       return handleUploadImage(base64Img);
     }
   };
 
   const handleUploadImage = (base64Image) => {
     showLoadingDialogue();
-    let CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/https-cyberve-com/image/upload';
+    let CLOUDINARY_URL =
+      'https://api.cloudinary.com/v1_1/https-cyberve-com/image/upload';
     fetch(CLOUDINARY_URL, {
       body: JSON.stringify({
-        "file": base64Image,
-        "upload_preset": "kvdcspfl",
+        file: base64Image,
+        upload_preset: 'kvdcspfl',
       }),
       headers: {
-        'content-type': 'application/json'
+        'content-type': 'application/json',
       },
       method: 'POST',
-    }).then(async res => {
-      let dataUrl = await res.json()
-      console.log('immmmaaaageeeee:', dataUrl);
-      // setGroupPhoto(dataUrl.url);
-      handleSaveProfileImage(dataUrl.url);
-      hideLoadingDialogue()
-    }).catch(err => {
-      hideLoadingDialogue()
-      console.log(err)
-    });
-  }
-  const handleSaveProfileImage = async base64Image => {
-    console.log('base64imageeeee:', base64Image)
+    })
+      .then(async (res) => {
+        let dataUrl = await res.json();
+        console.log('immmmaaaageeeee:', dataUrl);
+        // setGroupPhoto(dataUrl.url);
+        handleSaveProfileImage(dataUrl.url);
+        hideLoadingDialogue();
+      })
+      .catch((err) => {
+        hideLoadingDialogue();
+        console.log(err);
+      });
+  };
+  const handleSaveProfileImage = async (base64Image) => {
+    console.log('base64imageeeee:', base64Image);
     // await saveProfileImage(base64Image);
     setProfileImage(base64Image);
   };
@@ -210,7 +209,7 @@ function CreateEvent({ navigation }) {
   const handleGoBack = () => {
     // resetNavigation()
     return goBack();
-  }
+  };
   const resetNavigation = () => {
     const resetAction = StackActions.reset({
       index: 0,
@@ -218,52 +217,52 @@ function CreateEvent({ navigation }) {
       actions: [
         NavigationActions.navigate({
           routeName: 'Navigations',
-        })
-      ]
+        }),
+      ],
     });
     return navigation.dispatch(resetAction);
-  }
-  const handleEventNameChange = eventName => {
+  };
+  const handleEventNameChange = (eventName) => {
     if (eventName.length > 0) {
       setEventName({
         isEventNameValid: true,
-        eventName: eventName
+        eventName: eventName,
       });
     } else {
       if (eventName.length < 1) {
         setEventName({
           isEventNameValid: false,
-          eventName: ''
+          eventName: '',
         });
       }
     }
   };
-  const handleEventLocation = eventLocation => {
+  const handleEventLocation = (eventLocation) => {
     if (eventLocation.length > 0) {
       setEventLocation({
         isEventLocationValid: true,
-        eventLocation: eventLocation
+        eventLocation: eventLocation,
       });
     } else {
       if (eventLocation.length < 1) {
         setEventLocation({
           isEventNameValid: false,
-          eventLocation: ''
+          eventLocation: '',
         });
       }
     }
   };
-  const handleEventDescChange = eventDescription => {
+  const handleEventDescChange = (eventDescription) => {
     if (eventDescription.length > 0) {
       setEventDescription({
         isEventDescriptionValid: true,
-        eventDescription: eventDescription
+        eventDescription: eventDescription,
       });
     } else {
       if (eventDescription.length < 1) {
         setEventDescription({
           isEventDescriptionValid: false,
-          eventDescription: ''
+          eventDescription: '',
         });
       }
     }
@@ -275,34 +274,35 @@ function CreateEvent({ navigation }) {
     setShowLoading(false);
   };
   const handleCreateEvent = async () => {
-    if (profileImage === '' || profileImage === null || profileImage === undefined) {
+    if (
+      profileImage === '' ||
+      profileImage === null ||
+      profileImage === undefined
+    ) {
       return setShowAlert({
         showAlert: true,
         showSuccessAlert: false,
-        message: 'Upload Event Image'
+        message: 'Upload Event Image',
       });
-    }
-    else if (eventName.eventName.trim() == '') {
+    } else if (eventName.eventName.trim() == '') {
       return setShowAlert({
         showAlert: true,
         showSuccessAlert: false,
-        message: 'Enter Event Name'
+        message: 'Enter Event Name',
       });
     } else if (eventLocation.eventLocation == '') {
       setShowAlert({
         showAlert: true,
         showSuccessAlert: false,
-        message: 'Enter Event Location'
+        message: 'Enter Event Location',
       });
     } else if (eventDescription.eventDescription == '') {
       setShowAlert({
         showAlert: true,
         showSuccessAlert: false,
-        message: 'Enter Event Description'
+        message: 'Enter Event Description',
       });
-
-    }
-    else {
+    } else {
       showLoadingDialogue();
       const body = JSON.stringify({
         displayPhoto: profileImage,
@@ -311,10 +311,10 @@ function CreateEvent({ navigation }) {
         venue: eventLocation.eventLocation,
         dates: [
           {
-            "startDate": moment(date).toISOString(),
-            "endDate": moment(endDate).toISOString(),
-          }
-        ]
+            startDate: moment(date).toISOString(),
+            endDate: moment(endDate).toISOString(),
+          },
+        ],
       });
       try {
         await createEvent(body);
@@ -325,17 +325,17 @@ function CreateEvent({ navigation }) {
     }
   };
 
-  const createEvent = async body => {
+  const createEvent = async (body) => {
     showLoadingDialogue();
     const settings = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `${token}`
+        Authorization: `${token}`,
       },
       body: body,
     };
-    let Endpoint = `${CreateEventEndpoint}${groupId}/events`
+    let Endpoint = `${CreateEventEndpoint}${groupId}/events`;
     const response = await fetch(Endpoint, settings);
     const res = await response.json();
     console.log('hehehehe', Endpoint);
@@ -345,19 +345,19 @@ function CreateEvent({ navigation }) {
       setShowAlert({
         showAlert: true,
         showSuccessAlert: false,
-        message: res.meta.message
+        message: res.meta.message,
       });
     } else if (res.meta.status == 200 || res.meta.status < 300) {
       console.log(" '''''''''''''' ", res);
       hideLoadingDialogue();
-      return resetNavigation()
+      return resetNavigation();
     } else {
       if (res.meta.message) {
         hideLoadingDialogue();
         setShowAlert({
           showAlert: true,
           showSuccessAlert: false,
-          message: res.meta.message
+          message: res.meta.message,
         });
         hideLoadingDialogue();
         console.log({ responses: res.meta.message });
@@ -378,7 +378,8 @@ function CreateEvent({ navigation }) {
       </View>
       <KeyboardAvoidingView
         style={styles.KeyAvoidView}
-        behavior={Platform.OS === 'ios' ? 'padding' : null}>
+        behavior={Platform.OS === 'ios' ? 'padding' : null}
+      >
         <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.textView}>
             <DisplayText
@@ -401,12 +402,12 @@ function CreateEvent({ navigation }) {
                       style={StyleSheet.flatten(styles.profileImage)}
                     />
                   ) : (
-                      <Image
-                        onPress={getPermissionAsync}
-                        source={require('../../assets/images/profileimage.png')}
-                        style={StyleSheet.flatten(styles.profilePlaceHolder)}
-                      />
-                    )}
+                    <Image
+                      onPress={getPermissionAsync}
+                      source={require('../../assets/images/profileimage.png')}
+                      style={StyleSheet.flatten(styles.profilePlaceHolder)}
+                    />
+                  )}
                   <TouchableOpacity
                     onPress={getPermissionAsync}
                     style={styles.cameraCont}
@@ -462,7 +463,6 @@ function CreateEvent({ navigation }) {
                   Keyboard.dismiss();
                 }}
               />
-
             </View>
             <View style={styles.textInputView}>
               <InputField
@@ -530,7 +530,7 @@ function CreateEvent({ navigation }) {
         style={{
           color: 'black',
           ios_backgroundColor: 'white',
-          backgroundColor: '#00000055'
+          backgroundColor: '#00000055',
         }}
       />
       <DateTimePickerModal
@@ -541,7 +541,7 @@ function CreateEvent({ navigation }) {
         style={{
           color: 'black',
           ios_backgroundColor: 'white',
-          backgroundColor: '#00000055'
+          backgroundColor: '#00000055',
         }}
       />
 
@@ -568,6 +568,6 @@ function CreateEvent({ navigation }) {
       />
     </SafeAreaView>
   );
-};
+}
 
 export default CreateEvent;
