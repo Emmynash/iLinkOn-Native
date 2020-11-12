@@ -177,8 +177,8 @@ export default class CustomSidebarMenu extends Component {
                   fontFamily: theme.secondaryFont,
                   color:
                     global.currentScreenIndex === key
-                      ? colors.darkGrayf
-                      : colors.darkGray,
+                      ? colors.darkGray
+                      : colors.darkSilver,
                 }}
                 key={key}
                 onPress={() => {
