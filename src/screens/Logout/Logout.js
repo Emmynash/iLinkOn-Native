@@ -5,7 +5,7 @@ import {
   StatusBar,
   Image,
   AsyncStorage,
-  StyleSheet
+  StyleSheet,
 } from 'react-native';
 import styles from './styles';
 import { UserLogoutEndpoint, getProfile } from '../Utils/Utils';
@@ -20,7 +20,7 @@ export default class Profile extends Component {
       title: '',
       message: '',
       showAlert: false,
-      showLoading: false
+      showLoading: false,
     };
   }
   async componentDidMount() {
@@ -39,14 +39,14 @@ export default class Profile extends Component {
 
   showLoadingDialogue = () => {
     this.setState({
-      showLoading: true
+      showLoading: true,
     });
   };
 
   hideLoadingDialogue = () => {
     this.setState({
       showLoading: false,
-      restoring: false
+      restoring: false,
     });
   };
 
@@ -57,14 +57,14 @@ export default class Profile extends Component {
 
   handleCloseNotification = () => {
     return this.setState({
-      showAlert: false
+      showAlert: false,
     });
   };
 
   render() {
     return (
       <SafeAreaView style={styles.container}>
-        <StatusBar barStyle='default' />
+        <StatusBar backgroundColor='white' barStyle='default' />
         <Image
           source={require('../../assets/images/splash.png')}
           style={StyleSheet.flatten(styles.logoIcon)}
@@ -74,7 +74,7 @@ export default class Profile extends Component {
         title="Processing"
         message="Please wait..."
       /> */}
-        <DropdownAlert ref={ref => (this.dropDownAlertRef = ref)} />
+        <DropdownAlert ref={(ref) => (this.dropDownAlertRef = ref)} />
       </SafeAreaView>
     );
   }

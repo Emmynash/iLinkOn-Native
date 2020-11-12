@@ -972,7 +972,7 @@ export default class Chat extends Component {
     });
     return (
       <SafeAreaView style={styles.outer}>
-        <StatusBar barStyle={'dark-content'} />
+        <StatusBar backgroundColor='white' barStyle={'dark-content'} />
 
         {/* <DropdownAlert ref={ref => this.dropDownAlertRef = ref} /> */}
         <View style={styles.navBar}>
@@ -1302,7 +1302,7 @@ class FileBubble extends Component {
           marginBottom: 14,
         }}
       >
-        <StatusBar barStyle={'dark-content'} />
+        <StatusBar backgroundColor='white' barStyle={'dark-content'} />
         {leftSpacer}
         <View
           style={{
