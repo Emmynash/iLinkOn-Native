@@ -162,6 +162,7 @@ export default class Chat extends Component {
     connection.onmessage = (e) => {
       // console.log('i am here', e.data)
       const messageResponse = JSON.parse(e.data);
+      const reverseMsgs = messageResponse.reverse();
       this.onMessageData(messageResponse);
 
       console.log(messageResponse);
