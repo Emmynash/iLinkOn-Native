@@ -22,7 +22,6 @@ let styles = StyleSheet.create({
   },
   searchView: {
     height: Platform.OS === 'ios' ? 50 : 60,
-    marginTop: Platform.OS === 'ios' ? 8 : StatusBar.currentHeight,
     padding: 15,
     width: '100%',
     flexDirection: 'row',
