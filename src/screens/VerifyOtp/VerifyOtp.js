@@ -277,7 +277,7 @@ const VerifyOtp = ({ navigation }) => {
         source={require('../../assets/images/OTP-vector.png')}
         style={styles.wrapper_bg_image}
       ></Image>
-      <StatusBar barStyle='dark-content' />
+      <StatusBar backgroundColor='white' barStyle='dark-content' />
       <View style={styles.wrapper}>
         <View style={styles.headerView}>
           <TouchableOpacity

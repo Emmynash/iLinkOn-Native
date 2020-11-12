@@ -607,7 +607,7 @@ function DashBoard({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle='dark-content' />
+      <StatusBar backgroundColor='white' barStyle='dark-content' />
       <View style={styles.searchView}>
         <TouchableOpacity onPress={toggleDrawers}>
           <Image

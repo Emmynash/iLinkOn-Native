@@ -12,8 +12,7 @@ export default styles = StyleSheet.create({
   },
   navBar: {
     flexDirection: 'row',
-    marginTop: Platform.OS === 'ios' ? 8 : StatusBar.currentHeight,
-    padding: 10,
+    padding: 5,
     height: Platform.OS === 'ios' ? 50 : 64,
     width: '100%',
     alignItems: 'center',
@@ -223,6 +222,7 @@ export default styles = StyleSheet.create({
     resizeMode: 'contain',
     height: 25,
     width: 25,
+    marginLeft: 15,
   },
   micIcon: {
     resizeMode: 'contain',

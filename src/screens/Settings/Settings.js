@@ -18,30 +18,28 @@ import {
   Switch,
   StatusBar,
 } from 'react-native';
-import {
-  getProfileImage,
-  getUserDetails,
-  getProfile
-} from '../Utils/Utils';
+import { getProfileImage, getUserDetails, getProfile } from '../Utils/Utils';
 import {
   DisplayText,
   ErrorAlert,
   InputField,
   SubmitButton,
-  SuccessAlert
+  SuccessAlert,
 } from '../../components';
 
 const Settings = () => {
   const navigation = useNavigation();
   const { navigate } = useNavigation();
   const [showAlert, setShowAlert] = useState({
-    showAlert: false,
-    showSuccessAlert: false,
-    message: ''
-  }),
+      showAlert: false,
+      showSuccessAlert: false,
+      message: '',
+    }),
     [token, setToken] = useState(''),
     [userName, setUserName] = useState(),
-    [profileImage, setProfileImage] = useState('http://res.cloudinary.com/https-cyberve-com/image/upload/v1584886506/pre61jvaz0nrrmoudwxr.jpg');
+    [profileImage, setProfileImage] = useState(
+      'http://res.cloudinary.com/https-cyberve-com/image/upload/v1584886506/pre61jvaz0nrrmoudwxr.jpg'
+    );
 
   useEffect(() => {
     checkToken();
@@ -56,30 +54,35 @@ const Settings = () => {
         let access_token = profile.access_token;
         setToken(access_token);
         setProfileImage(image.image);
-        setUserName(`${userDetails.data.fName} ${userDetails.data.lName}`)
+        setUserName(`${userDetails.data.fName} ${userDetails.data.lName}`);
       }
     }
-
   };
   const updateProfile = () => {
-    return navigation.navigate('UpdateProfile')
+    return navigation.navigate('UpdateProfile');
   };
   const privacy = () => {
     return navigation.navigate('PrivacyTerms', {
-      'uri': 'https://ilinkon.com/privacy-policy.html',
-      'name': 'Privacy'
-    })
-  }
+      uri: 'https://ilinkon.com/privacy-policy.html',
+      name: 'Privacy',
+    });
+  };
   const termAndCondition = () => {
     return navigation.navigate('PrivacyTerms', {
-      'uri': 'https://ilinkon.com/terms-and-conditions.html',
-      'name': 'Term and Conditions'
-    })
-  }
+      uri: 'https://ilinkon.com/terms-and-conditions.html',
+      name: 'Term and Conditions',
+    });
+  };
 
   const userSupport = () => {
-    return Communications.email(['support@ilinkon.com',], null, null, 'iLinkOn', '')
-  }
+    return Communications.email(
+      ['support@ilinkon.com'],
+      null,
+      null,
+      'iLinkOn',
+      ''
+    );
+  };
 
   const toggleDrawers = async () => {
     await navigation.toggleDrawer();
@@ -92,7 +95,7 @@ const Settings = () => {
   // }
   return (
     <SafeAreaView style={styles.mainContainer}>
-      <StatusBar barStyle='dark-content' />
+      <StatusBar backgroundColor='white' barStyle='dark-content' />
       <View style={styles.searchView}>
         <TouchableOpacity style={{ padding: 8 }} onPress={toggleDrawers}>
           <Image
@@ -114,7 +117,10 @@ const Settings = () => {
               text={'ACCOUNT'}
             />
             <TouchableOpacity onPress={updateProfile} style={styles.cardView}>
-              <TouchableOpacity style={styles.headerView} onPress={updateProfile}>
+              <TouchableOpacity
+                style={styles.headerView}
+                onPress={updateProfile}
+              >
                 <Image
                   onPress={updateProfile}
                   source={{ uri: profileImage }}
@@ -126,14 +132,13 @@ const Settings = () => {
                   text={userName}
                 />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.headerView} >
+              <TouchableOpacity style={styles.headerView}>
                 <Image
                   source={require('../../assets/images/arrow_forward.png')}
                   style={StyleSheet.flatten(styles.playIcon)}
                 />
               </TouchableOpacity>
             </TouchableOpacity>
-
           </View>
 
           {/* <View style={styles.pushNotification}>
@@ -168,17 +173,13 @@ const Settings = () => {
               styles={StyleSheet.flatten(styles.pushTxt)}
               text={'iLinkOn'}
             />
-            <TouchableOpacity
-              onPress={privacy}
-              style={styles.cardView}>
+            <TouchableOpacity onPress={privacy} style={styles.cardView}>
               <DisplayText
                 onPress={privacy}
                 styles={StyleSheet.flatten(styles.changePwd)}
                 text={'Privacy'}
               />
-              <TouchableOpacity
-                onPress={privacy}
-                style={styles.headerView} >
+              <TouchableOpacity onPress={privacy} style={styles.headerView}>
                 <Image
                   source={require('../../assets/images/arrow_forward.png')}
                   style={StyleSheet.flatten(styles.playIcon)}
@@ -188,7 +189,8 @@ const Settings = () => {
 
             <TouchableOpacity
               onPress={termAndCondition}
-              style={styles.cardView2}>
+              style={styles.cardView2}
+            >
               <DisplayText
                 onPress={termAndCondition}
                 styles={StyleSheet.flatten(styles.changePwd)}
@@ -196,7 +198,8 @@ const Settings = () => {
               />
               <TouchableOpacity
                 onPress={termAndCondition}
-                style={styles.headerView} >
+                style={styles.headerView}
+              >
                 <Image
                   onPress={termAndCondition}
                   source={require('../../assets/images/arrow_forward.png')}
@@ -204,17 +207,13 @@ const Settings = () => {
                 />
               </TouchableOpacity>
             </TouchableOpacity>
-            <TouchableOpacity
-              onPress={userSupport}
-              style={styles.cardView2}>
+            <TouchableOpacity onPress={userSupport} style={styles.cardView2}>
               <DisplayText
                 onPress={userSupport}
                 styles={StyleSheet.flatten(styles.changePwd)}
                 text={'Support'}
               />
-              <TouchableOpacity
-                onPress={userSupport}
-                style={styles.headerView} >
+              <TouchableOpacity onPress={userSupport} style={styles.headerView}>
                 <Image
                   source={require('../../assets/images/arrow_forward.png')}
                   style={StyleSheet.flatten(styles.playIcon)}
@@ -222,13 +221,10 @@ const Settings = () => {
               </TouchableOpacity>
             </TouchableOpacity>
           </View>
-
-
         </View>
       </ScrollView>
     </SafeAreaView>
   );
-}
-
+};
 
 export default Settings;

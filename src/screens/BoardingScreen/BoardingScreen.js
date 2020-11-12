@@ -127,7 +127,7 @@ const BoardingScreen = () => {
     />
   ) : (
     <View style={{ flex: 1 }}>
-      <StatusBar barStyle='dark-content' />
+      <StatusBar backgroundColor='white' barStyle='dark-content' />
       <AppIntroSlider
         slides={slides}
         renderItem={_renderItem}

@@ -7,7 +7,7 @@ import {
   SafeAreaView,
   Image,
   Text,
-  StatusBar
+  StatusBar,
 } from 'react-native';
 import { getUserDetails, getProfileImage } from '../Utils/Utils';
 import colors from '../../assets/colors';
@@ -33,34 +33,35 @@ export default class CustomSidebarMenu extends Component {
       id: '',
       message: '',
       username: '',
-      profileImage: 'http://res.cloudinary.com/https-cyberve-com/image/upload/v1584886506/pre61jvaz0nrrmoudwxr.jpg',
+      profileImage:
+        'http://res.cloudinary.com/https-cyberve-com/image/upload/v1584886506/pre61jvaz0nrrmoudwxr.jpg',
     }),
       (this.items = [
         {
           navOptionThumb: home,
           navOptionName: 'Home',
-          screenToNavigate: 'DashBoard'
+          screenToNavigate: 'DashBoard',
         },
         {
           navOptionThumb: groups,
           navOptionName: 'Groups',
-          screenToNavigate: 'Groups'
+          screenToNavigate: 'Groups',
         },
         {
           navOptionThumb: messages,
           navOptionName: 'Messages',
-          screenToNavigate: 'Messages'
+          screenToNavigate: 'Messages',
         },
         {
           navOptionThumb: settings,
           navOptionName: 'Settings',
-          screenToNavigate: 'Settings'
+          screenToNavigate: 'Settings',
         },
         {
           navOptionThumb: logout,
           navOptionName: 'Logout',
-          screenToNavigate: 'Logout'
-        }
+          screenToNavigate: 'Logout',
+        },
       ]);
   }
 
@@ -79,13 +80,11 @@ export default class CustomSidebarMenu extends Component {
           firstname,
           lastname,
           email,
-          profileImage
+          profileImage,
         });
       }
-    } catch (error) {
-    }
+    } catch (error) {}
   };
-
 
   handleLogout = () => {
     return this.props.navigation.navigate('Logout');
@@ -95,7 +94,7 @@ export default class CustomSidebarMenu extends Component {
     const { firstname, email, id, profileImage } = this.state;
     return (
       <SafeAreaView style={styles.sideMenuContainer}>
-        <StatusBar barStyle={'dark-content'} />
+        <StatusBar backgroundColor='white' barStyle={'dark-content'} />
         {/*Top Large Image */}
         <View style={styles.drawerImageView}>
           <View style={styles.imageView}>
@@ -109,14 +108,14 @@ export default class CustomSidebarMenu extends Component {
             {firstname ? (
               <Text style={styles.txtName}>Hi, {`${firstname}`}</Text>
             ) : (
-                <Text style={styles.txtName}>{''}</Text>
-              )}
+              <Text style={styles.txtName}>{''}</Text>
+            )}
 
             {email ? (
               <Text style={styles.txtuser}>{email}</Text>
             ) : (
-                <Text style={styles.txtuserName}>{''}</Text>
-              )}
+              <Text style={styles.txtuserName}>{''}</Text>
+            )}
           </View>
         </View>
         {/*Divider between Top Image and Sidebar Option*/}
@@ -126,7 +125,7 @@ export default class CustomSidebarMenu extends Component {
           style={{
             width: '75%',
             marginLeft: 8,
-            marginTop: 20
+            marginTop: 20,
           }}
         >
           {this.items.map((item, key) => (
@@ -142,13 +141,13 @@ export default class CustomSidebarMenu extends Component {
                 paddingVertical: 8,
                 backgroundColor:
                   global.currentScreenIndex === key
-                    ? null
+                    ? colors.darkSilver
                     : colors.white,
                 // borderLeftWidth: global.currentScreenIndex === key ? 4 : 0,
                 borderColor: theme.primaryColor,
                 // marginVertical: 4,
                 borderRadius: theme.btnRadius,
-                height: 48
+                height: 48,
               }}
             >
               <View style={{ marginRight: 10, marginLeft: 12 }}>
@@ -160,14 +159,14 @@ export default class CustomSidebarMenu extends Component {
                       tintColor:
                         global.currentScreenIndex === key
                           ? colors.darkGray
-                          : colors.darkGray
-                    }
+                          : colors.darkGray,
+                    },
                   ]}
                   key={key}
                   onPress={() => {
                     global.currentScreenIndex = key;
                     this.props.navigation.navigate(item.screenToNavigate, {
-                      id: id
+                      id: id,
                     });
                   }}
                 />
@@ -179,13 +178,13 @@ export default class CustomSidebarMenu extends Component {
                   color:
                     global.currentScreenIndex === key
                       ? colors.darkGrayf
-                      : colors.darkGray
+                      : colors.darkGray,
                 }}
                 key={key}
                 onPress={() => {
                   global.currentScreenIndex = key;
                   this.props.navigation.navigate(item.screenToNavigate, {
-                    id: id
+                    id: id,
                   });
                 }}
               >

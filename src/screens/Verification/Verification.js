@@ -8,7 +8,7 @@ import {
   SafeAreaView,
   Image,
   KeyboardAvoidingView,
-  Text
+  Text,
 } from 'react-native';
 import { DisplayText, SingleButtonAlert, SubmitButton } from '../../components';
 import styles from './styles';
@@ -19,7 +19,7 @@ import {
   getRoute,
   getProfile,
   postWithToken,
-  ProfileEndpoint
+  ProfileEndpoint,
 } from '../Utils/Utils';
 import { ProgressDialog } from 'react-native-simple-dialogs';
 
@@ -34,7 +34,7 @@ export default class Verification extends Component {
       message: '',
       token: '',
       id: '',
-      otp: ''
+      otp: '',
     };
   }
 
@@ -42,7 +42,7 @@ export default class Verification extends Component {
     let profile = await getProfile();
 
     this.setState({
-      token: profile.access_token
+      token: profile.access_token,
     });
     // await this.handleGetProfile();
   }
@@ -52,39 +52,39 @@ export default class Verification extends Component {
   };
   handleCloseNotification = () => {
     return this.setState({
-      showAlert: false
+      showAlert: false,
     });
   };
   handleGetProfile = () => {
     const { token } = this.state;
     this.setState({
-      showLoading: true
+      showLoading: true,
     });
     let endPoint = `${ProfileEndpoint}`;
 
     getRoute(endPoint, token)
-      .then(res => {
+      .then((res) => {
         if (typeof res.message !== 'undefined' || typeof res.message === '') {
           return this.setState({
             showLoading: false,
             title: 'Alert',
             message: res.message,
-            showAlert: true
+            showAlert: true,
           });
         } else {
           const id = res.data.id;
           this.setState({
             showLoading: false,
-            id: id
+            id: id,
           });
         }
       })
-      .catch(res => {
+      .catch((res) => {
         this.setState({
           showLoading: false,
           tittle: 'Alert',
           message: res.message,
-          showAlert: true
+          showAlert: true,
         });
       });
   };
@@ -140,7 +140,7 @@ export default class Verification extends Component {
     const { showAlert, showLoading, title, message } = this.state;
     return (
       <SafeAreaView style={styles.container}>
-        <StatusBar barStyle='dark-content' />
+        <StatusBar backgroundColor='white' barStyle='dark-content' />
         <TouchableOpacity
           onPress={this.handleCloseVerification}
           style={styles.closeView}
@@ -163,9 +163,9 @@ export default class Verification extends Component {
 
         <KeyboardAvoidingView style={styles.optView}>
           <OtpInputs
-            handleChange={code =>
+            handleChange={(code) =>
               this.setState({
-                otp: code
+                otp: code,
               })
             }
             focusedBorderColor={'#ffffff'}

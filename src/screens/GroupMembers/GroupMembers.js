@@ -235,7 +235,7 @@ const GroupMembers = () => {
   };
   return (
     <SafeAreaView style={styles.mainContainer}>
-      <StatusBar barStyle='dark-content' />
+      <StatusBar backgroundColor='white' barStyle='dark-content' />
       <View style={styles.searchView}>
         <TouchableOpacity onPress={handleBackPress}>
           <Image

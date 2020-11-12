@@ -87,7 +87,7 @@ const Notification = ({ navigation }) => {
 
   return (
     <View style={styles.mainContainer}>
-      <StatusBar barStyle='dark-content' />
+      <StatusBar backgroundColor='white' barStyle='dark-content' />
       <View style={styles.searchView}>
         <TouchableOpacity style={{ padding: 8 }} onPress={toggleDrawers}>
           <Image
