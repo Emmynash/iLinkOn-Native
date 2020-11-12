@@ -4,13 +4,9 @@ import * as ImagePicker from 'expo-image-picker';
 import * as Permissions from 'expo-permissions';
 import Constants from 'expo-constants';
 import colors from '../../assets/colors';
-import theme from '../../assets/theme';
 import { ProgressDialog } from 'react-native-simple-dialogs';
-import { Dropdown } from 'react-native-material-dropdown';
-import jwtDecode from 'jwt-decode';
+import { Dropdown } from 'react-native-material-dropdown-update';
 import { useNavigation } from 'react-navigation-hooks';
-import { NavigationActions, StackActions } from 'react-navigation';
-import PickerSelect from 'react-native-picker-select';
 
 import styles from './styles';
 import {
@@ -96,10 +92,6 @@ function Profile({ navigation }) {
   const hideLoadingDialogue = () => {
     setShowLoading(false);
   };
-  // const showNotification = (type, title, message) => {
-  //   hideLoadingDialogue();
-  //   return dropDownAlertRef.alertWithType(type, title, message);
-  // };
 
   const handleCloseNotification = () => {
     return setShowAlert({
@@ -570,23 +562,6 @@ function Profile({ navigation }) {
                 baseColor={colors.darkText}
               />
             </View>
-            {/* <View style={styles.langDropDowm}>
-              <Dropdown
-                data={schoolDropDown}
-                labelFontSize={16}
-                dropdownPosition={4}
-                value={'Select School'}
-                fontSize={15}
-                itemPadding={8}
-                label={'School'}
-
-                onChangeText={(value) =>
-                  setSchool(value)
-                }
-                textColor={theme.primaryTextColor}
-                baseColor={colors.darkText}
-              />
-            </View> */}
           </View>
         </KeyboardAvoidingView>
       </ScrollView>

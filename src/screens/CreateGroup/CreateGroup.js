@@ -4,11 +4,9 @@ import * as ImagePicker from 'expo-image-picker';
 import * as Permissions from 'expo-permissions';
 import Constants from 'expo-constants';
 import colors from '../../assets/colors';
-import theme from '../../assets/theme';
 import { useNavigation } from 'react-navigation-hooks';
 import { ProgressDialog } from 'react-native-simple-dialogs';
 import { NavigationActions, StackActions } from 'react-navigation';
-import { Dropdown } from 'react-native-material-dropdown';
 
 import styles from './styles';
 import {
@@ -20,7 +18,7 @@ import {
   Image,
   Keyboard,
   View,
-  KeyboardAvoidingView
+  KeyboardAvoidingView,
 } from 'react-native';
 
 import {
@@ -29,7 +27,7 @@ import {
   saveProfileImage,
   GetSchoolsEndpoint,
   getProfile,
-  imageUpload
+  imageUpload,
 } from '../Utils/Utils';
 
 import {
@@ -37,24 +35,23 @@ import {
   ErrorAlert,
   InputField,
   SubmitButton,
-  SuccessAlert
+  SuccessAlert,
 } from '../../components';
 
 function CreateGroup({ navigation }) {
-
   const [groupName, setGroupName] = useState({
-    groupName: '',
-    isGroupNameValid: false
-  }),
+      groupName: '',
+      isGroupNameValid: false,
+    }),
     [groupDescription, setGroupDescription] = useState({
       groupDescription: '',
-      isGroupDescriptionValid: false
+      isGroupDescriptionValid: false,
     }),
     [showLoading, setShowLoading] = useState(false),
     [showAlert, setShowAlert] = useState({
       showAlert: false,
       showSuccessAlert: false,
-      message: ''
+      message: '',
     }),
     [profileImage, setProfileImage] = useState(null),
     [GroupPhoto, setGroupPhoto] = useState(''),
@@ -62,21 +59,21 @@ function CreateGroup({ navigation }) {
     [token, setToken] = useState(''),
     [schoolId, setSchoolId] = useState(''),
     [schoolsData, setSchools] = useState([]),
-    [successMessage, setSuccessMessage] = useState('')
-  const { navigate, goBack } = useNavigation()
+    [successMessage, setSuccessMessage] = useState('');
+  const { navigate, goBack } = useNavigation();
 
   useEffect(() => {
     checkToken();
   }, []);
 
   const checkToken = async () => {
-    let profile = await getProfile()
-    let userDetails = await getUserDetails()
+    let profile = await getProfile();
+    let userDetails = await getUserDetails();
     if (typeof profile.access_token !== 'undefined') {
       let access_token = profile.access_token;
-      setSchoolId(userDetails.data.school)
-      setToken(access_token)
-      await handleGetAllRequest(access_token)
+      setSchoolId(userDetails.data.school);
+      setToken(access_token);
+      await handleGetAllRequest(access_token);
     }
   };
 
@@ -99,11 +96,11 @@ function CreateGroup({ navigation }) {
     let result = await ImagePicker.launchImageLibraryAsync({
       allowsEditing: true,
       aspect: [4, 3],
-      base64: true
+      base64: true,
     });
 
     if (!result.cancelled) {
-      let base64Img = `data:image/jpg;base64,${result.base64}`
+      let base64Img = `data:image/jpg;base64,${result.base64}`;
       return handleUploadImage(base64Img);
     }
   };
@@ -112,38 +109,38 @@ function CreateGroup({ navigation }) {
     let header = {
       headers: {
         'Content-Type': 'application/json',
-        token: `${token}`
-      }
+        token: `${token}`,
+      },
     };
-    const school = fetch(GetSchoolsEndpoint, header)
+    const school = fetch(GetSchoolsEndpoint, header);
     // interest = fetch(GetInterestEndpoint, header);
     Promise.all([school])
-      .then(value => Promise.all(value.map(value => value.json())))
-      .then(finalResps => {
-        const schoolApiResp = finalResps[0]
+      .then((value) => Promise.all(value.map((value) => value.json())))
+      .then((finalResps) => {
+        const schoolApiResp = finalResps[0];
         // interestApiResp = finalResps[1];
         getSchool(schoolApiResp);
         // getInterest(interestApiResp);
       })
-      .catch(error => {
+      .catch((error) => {
         hideLoadingDialogue();
         console.log(error);
       });
   };
 
-  const getSchool = async schoolRes => {
+  const getSchool = async (schoolRes) => {
     console.log('schoollsss..... ', schoolRes);
     try {
       if (schoolRes) {
         hideLoadingDialogue();
-        const schToArray = Object.values(schoolRes.data)
+        const schToArray = Object.values(schoolRes.data);
         schToArray.map((item) => {
           const data = {
-            'label': item.name,
-            'value': item.id
-          }
-          return setSchools(sch => [...sch, data]);
-        })
+            label: item.name,
+            value: item.id,
+          };
+          return setSchools((sch) => [...sch, data]);
+        });
       } else {
         alert('Failed to retrieve ');
         hideLoadingDialogue();
@@ -184,54 +181,56 @@ function CreateGroup({ navigation }) {
     let CLOUDINARY_URL = imageUpload;
     fetch(CLOUDINARY_URL, {
       body: JSON.stringify({
-        "file": base64Image,
-        "upload_preset": "kvdcspfl",
+        file: base64Image,
+        upload_preset: 'kvdcspfl',
       }),
       headers: {
-        'content-type': 'application/json'
+        'content-type': 'application/json',
       },
       method: 'POST',
-    }).then(async res => {
-      let dataUrl = await res.json()
-      console.log('immmmaaaageeeee:', dataUrl);
-      setGroupPhoto(dataUrl.url);
-      handleSaveProfileImage(dataUrl.url);
-      hideLoadingDialogue()
-    }).catch(err => {
-      hideLoadingDialogue()
-      console.log(err)
-    });
-  }
-  const handleSaveProfileImage = async base64Image => {
-    console.log('base64imageeeee:', base64Image)
+    })
+      .then(async (res) => {
+        let dataUrl = await res.json();
+        console.log('immmmaaaageeeee:', dataUrl);
+        setGroupPhoto(dataUrl.url);
+        handleSaveProfileImage(dataUrl.url);
+        hideLoadingDialogue();
+      })
+      .catch((err) => {
+        hideLoadingDialogue();
+        console.log(err);
+      });
+  };
+  const handleSaveProfileImage = async (base64Image) => {
+    console.log('base64imageeeee:', base64Image);
     setProfileImage(base64Image);
   };
-  const handleGroupNameChange = group => {
+  const handleGroupNameChange = (group) => {
     if (group.length > 0) {
       setGroupName({
         groupName: group,
-        isGroupNameValid: true
+        isGroupNameValid: true,
       });
     } else {
       if (groupName.length < 1) {
         setGroupName({
           groupName: '',
-          isGroupNameValid: false
+          isGroupNameValid: false,
         });
       }
     }
   };
-  const handleGroupDescriptionChange = groupDesc => {
+  const handleGroupDescriptionChange = (groupDesc) => {
     if (groupDesc.length > 0) {
       setGroupDescription({
         isGroupDescriptionValid: true,
-        groupDescription: groupDesc
+        groupDescription: groupDesc,
       });
     } else {
       if (groupDesc.length < 1) {
         setGroupDescription({
           isGroupDescriptionValid: false,
-          groupDescription: ''
+          groupDescription: '',
         });
       }
     }
@@ -239,7 +238,7 @@ function CreateGroup({ navigation }) {
 
   const handleGoBack = () => {
     return goBack();
-  }
+  };
   const resetNavigation = () => {
     const resetAction = StackActions.reset({
       index: 0,
@@ -247,11 +246,11 @@ function CreateGroup({ navigation }) {
       actions: [
         NavigationActions.navigate({
           routeName: 'Navigations',
-        })
-      ]
+        }),
+      ],
     });
     return navigation.dispatch(resetAction);
-  }
+  };
 
   const showLoadingDialogue = () => {
     setShowLoading(true);
@@ -272,29 +271,27 @@ function CreateGroup({ navigation }) {
       return setShowAlert({
         showAlert: true,
         showSuccessAlert: false,
-        message: 'Enter Group Name'
+        message: 'Enter Group Name',
       });
     } else if (groupDescription.groupDescription == '') {
       setShowAlert({
         showAlert: true,
         showSuccessAlert: false,
-        message: 'Enter Group Decription'
+        message: 'Enter Group Decription',
       });
     } else if (profileImage == null) {
       setShowAlert({
         showAlert: true,
         showSuccessAlert: false,
-        message: 'Upload Group Image'
+        message: 'Upload Group Image',
       });
-    }
-    else if (schoolId === '' || schoolId === null) {
+    } else if (schoolId === '' || schoolId === null) {
       setShowAlert({
         showAlert: true,
         showSuccessAlert: false,
-        message: 'Select Your School'
+        message: 'Select Your School',
       });
-    }
-    else {
+    } else {
       showLoadingDialogue();
       const body = {
         displayPhoto: profileImage,
@@ -311,13 +308,13 @@ function CreateGroup({ navigation }) {
     }
   };
 
-  const createGroup = async body => {
+  const createGroup = async (body) => {
     showLoadingDialogue();
     const settings = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `${token}`
+        Authorization: `${token}`,
       },
       body: JSON.stringify(body),
     };
@@ -329,7 +326,7 @@ function CreateGroup({ navigation }) {
       setShowAlert({
         showAlert: true,
         showSuccessAlert: false,
-        message: res.meta.message.toString()
+        message: res.meta.message.toString(),
       });
     } else if (res.meta.status == 200 || res.meta.status < 300) {
       hideLoadingDialogue();
@@ -340,7 +337,7 @@ function CreateGroup({ navigation }) {
         setShowAlert({
           showAlert: true,
           showSuccessAlert: false,
-          message: res.meta.message.toString()
+          message: res.meta.message.toString(),
         });
         console.log({ responses: res.meta.message });
       }
@@ -350,7 +347,7 @@ function CreateGroup({ navigation }) {
   const handleCloseNotification = () => {
     return setShowAlert({
       showAlert: false,
-      showSuccessAlert: false
+      showSuccessAlert: false,
     });
   };
 
@@ -388,12 +385,12 @@ function CreateGroup({ navigation }) {
                       style={StyleSheet.flatten(styles.profileImage)}
                     />
                   ) : (
-                      <Image
-                        onPress={getPermissionAsync}
-                        source={require('../../assets/images/profileimage.png')}
-                        style={StyleSheet.flatten(styles.profilePlaceHolder)}
-                      />
-                    )}
+                    <Image
+                      onPress={getPermissionAsync}
+                      source={require('../../assets/images/profileimage.png')}
+                      style={StyleSheet.flatten(styles.profilePlaceHolder)}
+                    />
+                  )}
                   <TouchableOpacity
                     onPress={getPermissionAsync}
                     style={styles.cameraCont}
@@ -423,7 +420,6 @@ function CreateGroup({ navigation }) {
                 blurOnSubmit={false}
                 returnKeyType={'done'}
                 blurOnSubmit={false}
-
               />
               <Image
                 source={require('../../assets/images/happy.png')}
@@ -443,9 +439,7 @@ function CreateGroup({ navigation }) {
                 width={'80%'}
                 blurOnSubmit={false}
                 returnKeyType={'done'}
-
               />
-
             </View>
             {/* <View style={styles.langDropDowm}>
               <Dropdown
@@ -490,6 +484,6 @@ function CreateGroup({ navigation }) {
       </ScrollView>
     </SafeAreaView>
   );
-};
+}
 
 export default CreateGroup;
