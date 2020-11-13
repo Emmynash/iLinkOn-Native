@@ -36,7 +36,7 @@
     },
     "android": {
       "package": "com.ilinkon.app",
-      "versionCode": 6,
+      "versionCode": 1.3,
       "permissions": [
         "com.htc.launcher.permission.UPDATE_SHORTCUT",
         "READ_EXTERNAL_STORAGE",

@@ -1044,7 +1044,7 @@ export default class Chat extends Component {
                 value={this.state.inputBarText}
               />
               <TouchableOpacity
-                onPress={this._handleAudio}
+                onPress={() => this._handleAudio()}
                 disabled={this.state.audioState.isLoading}
               >
                 <Image
@@ -1099,7 +1099,7 @@ export default class Chat extends Component {
               />
 
               <TouchableOpacity
-                onPress={this._handleAudio}
+                onPress={() => this._handleAudio()}
                 disabled={this.state.audioState.isLoading}
               >
                 <Image
@@ -1362,6 +1362,7 @@ class AudioBubble extends Component {
       isPlaying: false,
       shouldCorrectPitch: true,
       isPlaybackAllowed: false,
+      didJustFinish: false,
       // isLoading: false,
     };
   }
@@ -1404,6 +1405,7 @@ class AudioBubble extends Component {
         shouldPlay: status.shouldPlay,
         isPlaying: status.isPlaying,
         shouldCorrectPitch: status.shouldCorrectPitch,
+        didJustFinish: status.didJustFinish,
         isPlaybackAllowed: true,
       });
     } else {
@@ -1424,10 +1426,13 @@ class AudioBubble extends Component {
     try {
       if (this.sound != null) {
         if (this.state.isPlaying) {
-          return await this.sound.pauseAsync();
+          await this.sound
+            .pauseAsync()
+            .catch((err) => console.log('could not pause sound', err));
         } else {
-          await this.sound.playAsync();
-          // return await this.sound.unloadAsync();
+          this.sound
+            .playAsync()
+            .catch((err) => console.log('could not stop sound', err));
         }
       }
     } catch (error) {
@@ -1511,7 +1516,7 @@ class AudioBubble extends Component {
         ? styles.messageBubbleTextLeft
         : styles.messageBubbleTextRight;
 
-    return (
+    return this.sound !== null ? (
       <View
         style={{
           justifyContent: 'space-between',
@@ -1558,11 +1563,24 @@ class AudioBubble extends Component {
         </View>
         {rightSpacer}
       </View>
-    );
+    ) : null;
   }
 }
 
 const playerStyle = StyleSheet.create({
+  volumeContainer: {
+    marginTop: 8,
+    marginRight: 2,
+    marginLeft: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    flexDirection: 'column',
+    flex: 1,
+    shadowOffset: { height: 0, width: 0 },
+    shadowColor: '#ffffff66',
+    shadowOpacity: 0.25,
+    shadowRadius: 2.26,
+  },
   container: {
     flex: 1,
     flexDirection: 'column',
