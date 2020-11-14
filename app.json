@@ -36,7 +36,7 @@
     },
     "android": {
       "package": "com.ilinkon.app",
-      "versionCode": 1.3,
+      "versionCode": 8,
       "permissions": [
         "com.htc.launcher.permission.UPDATE_SHORTCUT",
         "READ_EXTERNAL_STORAGE",
@@ -64,6 +64,18 @@
       "androidMode": "collapse",
       "androidCollapsedTitle": "New Message",
       "color": "#a649f2"
+    },
+    "hooks": {
+      "postPublish": [
+        {
+          "file": "sentry-expo/upload-sourcemaps",
+          "config": {
+            "organization": "cyberve-technologies-ltd",
+            "project": "ilinkon",
+            "authToken": "24787fe8f41549f7b88b97a4540d9971812a4f91769f45b0bede69339633375c"
+          }
+        }
+      ]
     },
     "description": ""
   }
