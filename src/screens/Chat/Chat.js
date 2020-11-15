@@ -110,21 +110,19 @@ export default class Chat extends Component {
         'https://gravatar.com/avatar/02bf38fddbfe9f82b94203336f9ebc41?s=200&d=retro',
       secondUsername: '',
       shift: new Animated.Value(0),
-      audioState: {
-        haveRecordingPermissions: false,
-        isLoading: false,
-        isPlaybackAllowed: false,
-        muted: false,
-        soundPosition: null,
-        soundDuration: null,
-        recordingDuration: null,
-        shouldPlay: false,
-        isPlaying: false,
-        isRecording: false,
-        shouldCorrectPitch: true,
-        volume: 1.0,
-        rate: 1.0,
-      },
+      haveRecordingPermissions: false,
+      isLoading: false,
+      isPlaybackAllowed: false,
+      muted: false,
+      soundPosition: null,
+      soundDuration: null,
+      recordingDuration: null,
+      shouldPlay: false,
+      isPlaying: false,
+      isRecording: false,
+      shouldCorrectPitch: true,
+      volume: 1.0,
+      rate: 1.0,
     };
   }
 
@@ -222,25 +220,21 @@ export default class Chat extends Component {
   _updateScreenForSoundStatus = (status) => {
     if (status.isLoaded) {
       this.setState({
-        audioState: {
-          soundDuration: status.durationMillis,
-          soundPosition: status.positionMillis,
-          shouldPlay: status.shouldPlay,
-          isPlaying: status.isPlaying,
-          rate: status.rate,
-          muted: status.isMuted,
-          volume: status.volume,
-          shouldCorrectPitch: status.shouldCorrectPitch,
-          isPlaybackAllowed: true,
-        },
+        soundDuration: status.durationMillis,
+        soundPosition: status.positionMillis,
+        shouldPlay: status.shouldPlay,
+        isPlaying: status.isPlaying,
+        rate: status.rate,
+        muted: status.isMuted,
+        volume: status.volume,
+        shouldCorrectPitch: status.shouldCorrectPitch,
+        isPlaybackAllowed: true,
       });
     } else {
       this.setState({
-        audioState: {
-          soundDuration: null,
-          soundPosition: null,
-          isPlaybackAllowed: false,
-        },
+        soundDuration: null,
+        soundPosition: null,
+        isPlaybackAllowed: false,
       });
       if (status.error) {
         console.log(`FATAL PLAYER ERROR: ${status.error}`);
@@ -251,28 +245,22 @@ export default class Chat extends Component {
   _updateScreenForRecordingStatus = (status) => {
     if (status.canRecord) {
       this.setState({
-        audioState: {
-          haveRecordingPermissions: true,
-          isRecording: status.isRecording,
-          recordingDuration: status.durationMillis,
-        },
+        haveRecordingPermissions: true,
+        isRecording: status.isRecording,
+        recordingDuration: status.durationMillis,
       });
     } else if (status.isDoneRecording) {
       this.setState({
-        audioState: {
-          isRecording: false,
-          haveRecordingPermissions: false,
-          recordingDuration: status.durationMillis,
-        },
+        isRecording: false,
+        haveRecordingPermissions: false,
+        recordingDuration: status.durationMillis,
       });
     }
   };
 
   async _stopPlaybackAndBeginRecording() {
     console.log('isRecording');
-    this.setState({
-      audioState: { isLoading: true },
-    });
+    this.setState({ isLoading: true });
     if (this.sound !== null) {
       await this.sound.unloadAsync();
       this.sound.setOnPlaybackStatusUpdate(null);
@@ -300,22 +288,25 @@ export default class Chat extends Component {
     recordOptions = JSON.parse(JSON.stringify(recordOptions));
 
     const recording = new Audio.Recording();
-    await recording.prepareToRecordAsync(recordOptions);
-    recording.setOnRecordingStatusUpdate(this._updateScreenForRecordingStatus);
+    try {
+      await recording.prepareToRecordAsync(recordOptions);
+      recording.setOnRecordingStatusUpdate(
+        this._updateScreenForRecordingStatus
+      );
 
-    this.recording = recording;
+      this.recording = recording;
 
-    await this.recording.startAsync(); // Will call this._updateScreenForRecordingStatus to update the screen.
-    this.setState({
-      audioState: { isLoading: false },
-    });
+      await this.recording.startAsync(); // Will call this._updateScreenForRecordingStatus to update the screen.
+      this.setState({ isLoading: false });
+    } catch (error) {
+      console.log(error);
+      throw new Error(error);
+    }
   }
 
   async _stopRecordingAndEnablePlayback() {
     console.log('isDoneRecording');
-    this.setState({
-      audioState: { isLoading: true },
-    });
+    this.setState({ isLoading: true });
     try {
       await this.recording.stopAndUnloadAsync();
     } catch (error) {
@@ -387,23 +378,21 @@ export default class Chat extends Component {
     const { sound, status } = await this.recording.createNewLoadedSoundAsync(
       {
         isLooping: true,
-        isMuted: this.state.audioState.muted,
-        volume: this.state.audioState.volume,
-        rate: this.state.audioState.rate,
-        shouldCorrectPitch: this.state.audioState.shouldCorrectPitch,
+        isMuted: this.state.muted,
+        volume: this.state.volume,
+        rate: this.state.rate,
+        shouldCorrectPitch: this.state.shouldCorrectPitch,
       },
       this._updateScreenForSoundStatus
     );
 
     this.sound = sound;
 
-    this.setState({
-      audioState: { isLoading: false },
-    });
+    this.setState({ isLoading: false });
   }
 
   _handleAudio = async () => {
-    if (this.state.audioState.isRecording) {
+    if (this.state.isRecording) {
       this._stopRecordingAndEnablePlayback();
     } else {
       const response = await Permissions.askAsync(Permissions.AUDIO_RECORDING);
@@ -416,7 +405,7 @@ export default class Chat extends Component {
 
   _onPlayPausePressed = () => {
     if (this.sound != null) {
-      if (this.state.audioState.isPlaying) {
+      if (this.state.isPlaying) {
         this.sound.pauseAsync();
       } else {
         this.sound.playAsync();
@@ -1045,11 +1034,11 @@ export default class Chat extends Component {
               />
               <TouchableOpacity
                 onPress={() => this._handleAudio()}
-                disabled={this.state.audioState.isLoading}
+                disabled={this.state.isLoading}
               >
                 <Image
                   source={
-                    this.state.audioState.isRecording
+                    this.state.isRecording
                       ? require('../../assets/images/microphone-red-button.png')
                       : require('../../assets/images/microphone-black-button.png')
                   }
@@ -1100,11 +1089,11 @@ export default class Chat extends Component {
 
               <TouchableOpacity
                 onPress={() => this._handleAudio()}
-                disabled={this.state.audioState.isLoading}
+                disabled={this.state.isLoading}
               >
                 <Image
                   source={
-                    this.state.audioState.isRecording
+                    this.state.isRecording
                       ? require('../../assets/images/microphone-red-button.png')
                       : require('../../assets/images/microphone-black-button.png')
                   }
