@@ -4,7 +4,11 @@
     "slug": "iLinkOn",
     "privacy": "public",
     "sdkVersion": "39.0.0",
-    "platforms": ["ios", "android", "web"],
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
     "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -16,13 +20,15 @@
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "usesIcloudStorage": true,
       "buildNumber": "2.0.0",
       "loadJSInBackgroundExperimental": true,
-      "bundleIdentifier": "com.ilinkon.app",
+      "bundleIdentifier": "com.ilinkon.net",
       "config": {
         "googleMapsApiKey": "AIzaSyDf_cRMFZYYjQrkf5rqlkgSIr5yQHa_rBA"
       },
@@ -77,6 +83,7 @@
         }
       ]
     },
-    "description": ""
+    "description": "",
+    "entryPoint": "node_modules/expo/AppEntry.js"
   }
 }
