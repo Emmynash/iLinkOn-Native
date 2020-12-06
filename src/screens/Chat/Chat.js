@@ -879,9 +879,9 @@ export default class Chat extends Component {
   handleKeyboardDidShow = (event) => {
     const { height: windowHeight } = Dimensions.get('window');
     const keyboardHeight = event.endCoordinates.height;
-    const currentlyFocusedField = TextInputState.currentlyFocusedField();
+    const currentlyFocusedInput = TextInputState.currentlyFocusedInput();
     UIManager.measure(
-      currentlyFocusedField,
+      currentlyFocusedInput,
       (originX, originY, width, height, pageX, pageY) => {
         const fieldHeight = height;
         const fieldTop = pageY;
