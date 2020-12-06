@@ -1,7 +1,7 @@
 'use strict';
 
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, TextInput } from 'react-native';
+import { StyleSheet, View, TextInput, LogBox } from 'react-native';
 import * as Sentry from 'sentry-expo';
 import * as Font from 'expo-font';
 import Navigator from './routes';
@@ -16,6 +16,7 @@ Sentry.init({
   enableInExpoDevelopment: true,
   debug: true, // Sentry will try to print out useful debugging information if something goes wrong with sending an event. Set this to `false` in production.
   setCommits: true,
+  enableNative: false
 });
 
 // Access any @sentry/react-native exports via:
@@ -23,6 +24,14 @@ Sentry.init({
 
 // Access any @sentry/browser exports via:
 // Sentry.Browser.*
+
+LogBox.ignoreAllLogs();
+LogBox.ignoreLogs([
+  'Animated: `useNativeDriver` was not specified. This is a required option and must be explicitly set to `true` or `false`',
+  'Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle.',
+  'VirtualizedLists should never be nested inside plain ScrollViews with the same orientation - use another VirtualizedList-backed container instead.',
+]);
+
 
 const App = () => {
   const [fontsLoaded, setfontLoad] = useState(false);
