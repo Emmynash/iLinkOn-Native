@@ -72,9 +72,16 @@ export default class CustomSidebarMenu extends Component {
     const profile = await getUserDetails();
     try {
       if (profile.data) {
+        let image = ''
+        if (profile.data.profilePhoto.split(':')[0] === 'http') {
+          let secure_url = 'https:' + profile.data.profilePhoto.split(':')[1]
+          image = secure_url;
+        } else {
+          image = profile.data.profilePhoto;
+        }
         const email = profile.data.email,
           firstname = profile.data.fName,
-          profileImage = profile.data.profilePhoto,
+          profileImage = image,
           lastname = profile.data.lName;
         this.setState({
           firstname,
@@ -129,6 +136,7 @@ export default class CustomSidebarMenu extends Component {
           }}
         >
           {this.items.map((item, key) => (
+
             <TouchableOpacity
               key={key}
               onPress={() => {
