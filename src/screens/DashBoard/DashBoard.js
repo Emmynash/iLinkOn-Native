@@ -82,7 +82,13 @@ function DashBoard({ navigation }) {
     let profile = await getProfile();
     console.log(userDetails);
     if (typeof userDetails.data !== 'undefined') {
-      let image = userDetails.data.profilePhoto;
+      let image = '';
+      if (userDetails.data.profilePhoto.split(':')[0] === 'http'){
+        let secure_url = 'https:' + userDetails.data.profilePhoto.split(':')[1]
+        image = secure_url;
+      }else{
+        image = userDetails.data.profilePhoto;
+      }
       let userId = userDetails.data.id;
       let access_token = profile.access_token;
       let schoolID = userDetails.data.school;
@@ -452,6 +458,13 @@ function DashBoard({ navigation }) {
     );
   };
   const renderRow = ({ item }) => {
+    let image = ''
+    if (item.displayPhoto.split(':')[0] === 'http') {
+      let secure_url = 'https:' + item.displayPhoto.split(':')[1]
+      image = secure_url;
+    } else {
+      image = item.displayPhoto;
+    }
     return (
       <View style={styles.renderRowView}>
         <View style={styles.flatlistGroup}>
@@ -462,7 +475,7 @@ function DashBoard({ navigation }) {
             <Image
               onPress={() => showCustomeModal(item)}
               style={styles.faceImage}
-              source={{ uri: item.displayPhoto }}
+              source={{ uri: image }}
             />
           </TouchableOpacity>
           <TouchableOpacity
@@ -545,13 +558,20 @@ function DashBoard({ navigation }) {
     );
   };
   const renderAllEvent = ({ item }) => {
+    let image = ''
+    if (item.displayPhoto.split(':')[0] === 'http') {
+      let secure_url = 'https:' + item.displayPhoto.split(':')[1]
+      image = secure_url;
+    } else {
+      image = item.displayPhoto;
+    }
     return (
       <View style={styles.eventRowView}>
         <View style={styles.flatlistGroup}>
           <View style={styles.itemImageEvent}>
             <Image
               style={styles.faceImageEvent}
-              source={{ uri: item.displayPhoto }}
+              source={{ uri: image }}
             />
           </View>
           <View style={styles.itemDetails}>
