@@ -1,6 +1,7 @@
 'use strict';
 import React, { useState, useEffect } from 'react';
 import * as ImagePicker from 'expo-image-picker';
+import AndroidImagePicker from 'react-native-image-picker';
 import * as Permissions from 'expo-permissions';
 import Constants from 'expo-constants';
 import colors from '../../assets/colors';
@@ -128,6 +129,7 @@ function UpdateProfile({ navigation }) {
   };
 
   const pickImage = async () => {
+    if (Constants.platform.ios) {
     let result = await ImagePicker.launchImageLibraryAsync({
       allowsEditing: true,
       aspect: [4, 3],
@@ -137,6 +139,30 @@ function UpdateProfile({ navigation }) {
     if (!result.cancelled) {
       let base64Img = `data:image/jpg;base64,${result.base64}`;
       return handleUploadImage(base64Img);
+    }
+    } else {
+      const options = {
+        title: 'Select Image',
+        customButtons: [{ name: 'Image', title: 'Choose Photo from your storage' }],
+        storageOptions: {
+          skipBackup: true,
+          path: 'images',
+        },
+        allowsEditing: true,
+      };
+      AndroidImagePicker.launchImageLibrary(options, (response) => {
+
+        if (response.didCancel) {
+          console.log('User cancelled image picker');
+        } else if (response.error) {
+          console.log('ImagePicker Error: ', response.error);
+        } else if (response.customButton) {
+          console.log('User tapped custom button: ', response.customButton);
+        } else {
+          const source = 'data:image/jpeg;base64,' + response.data;
+          return handleUploadImage(source);
+        }
+      });
     }
   };
 
@@ -156,7 +182,7 @@ function UpdateProfile({ navigation }) {
     })
       .then(async (res) => {
         let dataUrl = await res.json();
-        handleSaveProfileImage(dataUrl.url);
+        handleSaveProfileImage(dataUrl.secure_url);
         hideLoadingDialogue();
       })
       .catch((err) => {
