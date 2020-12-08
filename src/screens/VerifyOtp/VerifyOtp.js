@@ -364,7 +364,7 @@ const VerifyOtp = ({ navigation }) => {
               }}
             />
           </View>
-          <KeyboardSpacer topSpacing={150} />
+          <KeyboardSpacer topSpacing={150} /> 
           <View style={{ flex: 1, flexDirection: 'row', margin: 20 }}>
             <DisplayText
               text={`Did not receive OTP?`}
