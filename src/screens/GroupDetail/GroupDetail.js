@@ -131,10 +131,17 @@ class GroupDetail extends Component {
     try {
       if (groupRes) {
         this.hideLoadingDialogue();
+        let image = ''
+        if (groupRes.data.displayPhoto.split(':')[0] === 'http' ) {
+          let secure_url = 'https:' + groupRes.data.displayPhoto.split(':')[1]
+          image = secure_url;
+        } else {
+          image = groupRes.data.displayPhoto;
+        }
         return this.setState({
           groupName: groupRes.data.name,
           groupDescription: groupRes.data.description,
-          imageLink: groupRes.data.displayPhoto,
+          imageLink: image,
         });
       } else {
         this.hideLoadingDialogue();
@@ -378,11 +385,17 @@ class GroupDetail extends Component {
   //   );
   // };
   selectUser = async (item) => {
+    let image = ''
+    if (item.member.profilePhoto.split(':')[0] === 'http') {
+      let secure_url = 'https:' + item.member.profilePhoto.split(':')[1]
+      image = secure_url;
+    } else {
+      image = item.member.profilePhoto;
+    }
     const items = {
       name: item.member.fName,
-      displayPhoto: item.member.profilePhoto,
+      displayPhoto: image,
     };
-    console.log('item', item.member.profilePhoto);
     const body = JSON.stringify({
       userId: item.memberId,
     });
@@ -443,6 +456,13 @@ class GroupDetail extends Component {
   };
 
   renderMember = ({ item }) => {
+    let image = ''
+    if (item.profilePhoto.split(':')[0] === 'http') {
+      let secure_url = 'https:' + item.profilePhoto.split(':')[1]
+      image = secure_url;
+    } else {
+      image = item.profilePhoto;
+    }
     return (
       <View>
         {item.profilePhoto == null ? (
@@ -461,7 +481,7 @@ class GroupDetail extends Component {
             onPress={() => this.selectUser(item)}
           >
             <Image
-              source={{ uri: item.profilePhoto }}
+              source={{ uri: image }}
               style={StyleSheet.flatten(styles.circleView)}
             />
           </TouchableOpacity>
