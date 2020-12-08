@@ -43,6 +43,8 @@
 			</dict>
 		</dict>
 	</dict>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>iLinkOn would like to access your media location in order to saved pdf files</string>
 	<key>NSCameraUsageDescription</key>
 	<string>iLinkOn would like to access your library in order to update your profile or send image/pdf file</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
