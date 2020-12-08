@@ -70,6 +70,7 @@ const Messages = () => {
       let access_token = profile.access_token;
       let id = userDetails.data.id;
       setToken(access_token);
+      console.log(image.image);
       setProfileImage(image.image);
       setUserId(id);
       setUserName(`${userDetails.data.fName} ${userDetails.data.lName}`);
@@ -208,10 +209,17 @@ const Messages = () => {
   };
 
   const handleImageView = (item) => {
+    let image = ''
+    if (item.secondParticipantProfilepic.split(':')[0] === 'http') {
+      let secure_url = 'https:' + item.secondParticipantProfilepic.split(':')[1]
+      image = secure_url;
+    } else {
+      image = item.secondParticipantProfilepic
+    }
     return setShowAlert({
       showAlert: true,
       showSuccessAlert: false,
-      profilePic: item.secondParticipantProfilepic,
+      profilePic: image,
       imageTitile: item.secondParticipantfName,
     });
   };
@@ -224,6 +232,13 @@ const Messages = () => {
   };
 
   const renderRow = ({ item }) => {
+    let image = ''
+    if (item.secondParticipantProfilepic.split(':')[0] === 'http') {
+      let secure_url = 'https:' + item.secondParticipantProfilepic.split(':')[1]
+      image = secure_url;
+    } else {
+      image = item.secondParticipantProfilepic
+    }
     return (
       <TouchableOpacity
         onPress={() => selectUserorGroup(item)}
@@ -236,7 +251,7 @@ const Messages = () => {
           <Image
             onPress={() => handleImageView(item)}
             source={{
-              uri: item.secondParticipantProfilepic || item.profilePhoto,
+              uri: image,
             }}
             style={StyleSheet.flatten(styles.profileIcon)}
           />
