@@ -302,6 +302,13 @@ function Groups({ navigation }) {
     );
   };
   const renderRow = ({ item }) => {
+    let image = ''
+    if (item.displayPhoto.split(':')[0] === 'http') {
+      let secure_url = 'https:' + item.displayPhoto.split(':')[1]
+      image = secure_url;
+    } else {
+      image = item.displayPhoto;
+    }
     return (
       <View style={styles.renderRowView}>
         <View style={styles.flatlistGroup}>
@@ -312,7 +319,7 @@ function Groups({ navigation }) {
             <Image
               onPress={() => showCustomeModal(item)}
               style={styles.faceImage}
-              source={{ uri: item.displayPhoto }}
+              source={{ uri: image }}
             />
           </TouchableOpacity>
           <TouchableOpacity
@@ -337,6 +344,13 @@ function Groups({ navigation }) {
   };
 
   const renderCreatedGroup = ({ item }) => {
+    let image = ''
+    if (item.displayPhoto.split(':')[0] === 'http') {
+      let secure_url = 'https:' + item.displayPhoto.split(':')[1]
+      image = secure_url;
+    } else {
+      image = item.displayPhoto;
+    }
     return (
       <View style={styles.renderRowView}>
         <View style={styles.flatlistGroup}>
@@ -347,7 +361,7 @@ function Groups({ navigation }) {
             <Image
               onPress={() => showCustomeModal(item)}
               style={styles.faceImage}
-              source={{ uri: item.displayPhoto }}
+              source={{ uri: image }}
             />
           </TouchableOpacity>
           <TouchableOpacity
@@ -372,6 +386,13 @@ function Groups({ navigation }) {
   };
 
   const renderOtherGroups = ({ item }) => {
+    let image = ''
+    if (item.displayPhoto.split(':')[0] === 'http') {
+      let secure_url = 'https:' + item.displayPhoto.split(':')[1]
+      image = secure_url;
+    } else {
+      image = item.displayPhoto;
+    }
     return (
       <View style={styles.flatListView}>
         <TouchableOpacity
@@ -381,7 +402,7 @@ function Groups({ navigation }) {
           <Image
             onPress={() => showCustomeModal(item)}
             style={styles.faceImage}
-            source={{ uri: item.displayPhoto }}
+            source={{ uri: image }}
           />
         </TouchableOpacity>
         <TouchableOpacity
