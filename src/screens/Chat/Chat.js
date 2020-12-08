@@ -25,6 +25,7 @@ import Constants from 'expo-constants';
 import * as ImagePicker from 'expo-image-picker';
 import * as Permissions from 'expo-permissions';
 import * as DocumentPicker from 'expo-document-picker';
+import AndroidImagePicker from 'react-native-image-picker';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
 import { ProgressDialog } from 'react-native-simple-dialogs';
@@ -197,6 +198,26 @@ export default class Chat extends Component {
       name = userDetails.fName,
       id = userDetails.id;
 
+    let image = ''
+    if (item.secondParticipantProfilepic && (item.secondParticipantProfilepic.split(':')[0] === 'http' || item.displayPhoto.split(':')[0] === 'http')) {
+      let secure_url = 'https:' + item.secondParticipantProfilepic.split(':')[1]
+      image = secure_url;
+    } else if (item.displayPhoto && (item.displayPhoto.split(':')[0] === 'http')) {
+      let secure_url = 'https:' + item.displayPhoto.split(':')[1]
+      image = secure_url;
+    } else if (item.profilePhoto && (item.profilePhoto.split(':')[0] === 'http')) {
+      let secure_url = 'https:' + item.profilePhoto.split(':')[1]
+      image = secure_url;
+    } else {
+      if (item.secondParticipantProfilepic){
+        image = item.secondParticipantProfilepic
+      }else if (item.displayPhoto){
+        image = item.displayPhoto;
+      } else {
+        image = item.profilePhoto;
+      }
+    }
+
     this.setState({
       token: token,
       userid: id,
@@ -204,10 +225,7 @@ export default class Chat extends Component {
       threadId: data.id,
       secondUsername:
         item.secondParticipantfName || item.name || item.member.fName,
-      profilePhoto:
-        item.secondParticipantProfilepic ||
-        item.displayPhoto ||
-        item.profilePhoto,
+      profilePhoto: image
     });
     await this.handleGetAllMessage();
     setTimeout(
@@ -328,7 +346,7 @@ export default class Chat extends Component {
     formdata.append('cloud_name', 'https-cyberve-com');
     formdata.append('upload_preset', 'kvdcspfl');
 
-    fetch('http://api.cloudinary.com/v1_1/https-cyberve-com/auto/upload', {
+    fetch('https://api.cloudinary.com/v1_1/https-cyberve-com/auto/upload', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -428,7 +446,8 @@ export default class Chat extends Component {
   };
 
   pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
+    if (Constants.platform.ios){
+      let result = await ImagePicker.launchImageLibraryAsync({
       allowsEditing: true,
       aspect: [4, 5],
       base64: true,
@@ -437,6 +456,28 @@ export default class Chat extends Component {
     if (!result.cancelled) {
       let base64Img = `data:image/jpg;base64,${result.base64}`;
       return this._handleImageUpload(base64Img);
+    }}else{
+     const options = {
+       title: 'Select Image',
+       customButtons: [{ name: 'Image', title: 'Choose Photo from your storage' }],
+       storageOptions: {
+         skipBackup: true,
+         path: 'images',
+       },
+     };
+     AndroidImagePicker.launchImageLibrary(options, (response) => {
+
+       if (response.didCancel) {
+         console.log('User cancelled image picker');
+       } else if (response.error) {
+         console.log('ImagePicker Error: ', response.error);
+       } else if (response.customButton) {
+         console.log('User tapped custom button: ', response.customButton);
+       } else {
+         const source = 'data:image/jpeg;base64,' + response.data;
+         return this._handleImageUpload(source);
+       }
+     });
     }
   };
 
@@ -512,7 +553,8 @@ export default class Chat extends Component {
         uri: result.uri,
         type: 'application/pdf',
       };
-      if (source.uri.split('.')[4] !== 'pdf') {
+
+      if (source.uri && source.name.split('.').reverse()[0] !== 'pdf' ) {
         return this.setState({
           showAlert: true,
           showSuccessAlert: false,
@@ -531,7 +573,7 @@ export default class Chat extends Component {
     formdata.append('cloud_name', 'https-cyberve-com');
     formdata.append('upload_preset', 'kvdcspfl');
 
-    fetch('http://api.cloudinary.com/v1_1/https-cyberve-com/auto/upload', {
+    fetch('https://api.cloudinary.com/v1_1/https-cyberve-com/auto/upload', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -877,33 +919,33 @@ export default class Chat extends Component {
   }
 
   handleKeyboardDidShow = (event) => {
-    const { height: windowHeight } = Dimensions.get('window');
-    const keyboardHeight = event.endCoordinates.height;
-    const currentlyFocusedInput = TextInputState.currentlyFocusedInput();
-    UIManager.measure(
-      currentlyFocusedInput,
-      (originX, originY, width, height, pageX, pageY) => {
-        const fieldHeight = height;
-        const fieldTop = pageY;
-        const gap = windowHeight - keyboardHeight - (fieldTop + fieldHeight);
-        if (gap >= 0) {
-          return;
-        }
-        Animated.timing(this.state.shift, {
-          toValue: gap,
-          duration: 200,
-          useNativeDriver: true,
-        }).start();
-      }
-    );
+    // const { height: windowHeight } = Dimensions.get('window');
+    // const keyboardHeight = event.endCoordinates.height;
+    // const currentlyFocusedInput = TextInputState.currentlyFocusedInput();
+    // UIManager.measure(
+    //   currentlyFocusedInput,
+    //   (originX, originY, width, height, pageX, pageY) => {
+    //     const fieldHeight = height;
+    //     const fieldTop = pageY;
+    //     const gap = windowHeight - keyboardHeight - (fieldTop + fieldHeight);
+    //     if (gap >= 0) {
+    //       return;
+    //     }
+    //     Animated.timing(this.state.shift, {
+    //       toValue: gap,
+    //       duration: 200,
+    //       useNativeDriver: true,
+    //     }).start();
+    //   }
+    // );
   };
 
   handleKeyboardDidHide = () => {
-    Animated.timing(this.state.shift, {
-      toValue: 0,
-      duration: 200,
-      useNativeDriver: true,
-    }).start();
+    // Animated.timing(this.state.shift, {
+    //   toValue: 0,
+    //   duration: 200,
+    //   useNativeDriver: true,
+    // }).start();
   };
 
   handleBackPress = () => {
@@ -1062,7 +1104,7 @@ export default class Chat extends Component {
           <Animated.View
             style={[
               styles.inputContainer,
-              { transform: [{ translateY: shift }] },
+                { transform: [{ translateY: shift }] },
             ]}
           >
             <ScrollView
