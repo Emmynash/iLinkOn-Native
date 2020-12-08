@@ -179,15 +179,29 @@ const GroupMembers = () => {
   };
 
   const handleImageView = (item) => {
+    let image = ''
+    if (item.profilePhoto.split(':')[0] === 'http') {
+      let secure_url ='https:' + item.profilePhoto.split(':')[1]
+      image = secure_url;
+    } else {
+      image = item.profilePhoto;
+    }
     return setShowAlert({
       showAlert: true,
       showSuccessAlert: false,
-      profilePic: item.profilePhoto,
+      profilePic: image,
       imageTitile: item.member.fName,
     });
   };
 
   const renderRow = ({ item }) => {
+    let image = ''
+    if ( item.profilePhoto.split(':')[0] === 'http') {
+      let secure_url = 'https:' + item.profilePhoto.split(':')[1]
+      image = secure_url;
+    } else {
+      image =  item.profilePhoto;
+    }
     return (
       <TouchableOpacity
         onPress={() => selectUserorGroup(item)}
@@ -199,7 +213,7 @@ const GroupMembers = () => {
         >
           <Image
             onPress={() => handleImageView(item)}
-            source={{ uri: item.profilePhoto }}
+            source={{ uri: image }}
             style={StyleSheet.flatten(styles.profileIcon)}
           />
           <View>
