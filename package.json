@@ -67,7 +67,7 @@
     "react-native-unimodules": "~0.11.0",
     "react-native-vector-icons": "^7.0.0",
     "react-native-web": "~0.13.7",
-    "react-native-webview": "10.7.0",
+    "react-native-webview": "11.0.0",
     "react-navigation": "^4.1.1",
     "react-navigation-drawer": "^2.3.4",
     "react-navigation-hooks": "^1.1.0",
